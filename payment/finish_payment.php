@@ -23,39 +23,44 @@ if ($user_id <= 0 && !empty($_SESSION['nama'])) {
     }
 }
 
-$rental_id = isset($_GET['id']) ? (int)$_GET['id'] : (isset($_POST['rental_id']) ? (int)$_POST['rental_id'] : 0);
+$tx_type   = (isset($_GET['type']) && strtolower(trim((string)$_GET['type'])) === 'order') ? 'order' : 'rental';
+$tx_id     = isset($_GET['id']) ? (int)$_GET['id'] : (isset($_POST['rental_id']) ? (int)$_POST['rental_id'] : 0);
 $order_id  = isset($_GET['order_id']) ? trim((string)$_GET['order_id']) : '';
 $status    = isset($_GET['status']) ? trim((string)$_GET['status']) : '';
 $pay_type  = isset($_GET['payment_type']) ? trim((string)$_GET['payment_type']) : 'Midtrans Online';
 
-if ($rental_id <= 0) {
-    header("location:../user/riwayat.php?pesan=" . urlencode("ID transaksi tidak valid."));
+$redirect_base = ($tx_type === 'order') ? '../user/pesanan.php' : '../user/riwayat.php';
+
+if ($tx_id <= 0) {
+    header("location:$redirect_base?pesan=" . urlencode("ID transaksi tidak valid."));
     exit;
 }
 
-// Verifikasi kepemilikan transaksi (kecuali admin)
+$table_name  = ($tx_type === 'order') ? 'orders' : 'rentals';
 $where_owner = ($_SESSION['role'] === 'admin') ? "" : " AND user_id = '$user_id'";
-$q_rental = mysqli_query($conn, "SELECT id, user_id, product_id, quantity, status, payment_status, snap_token, midtrans_order_id FROM rentals WHERE id = '$rental_id' $where_owner LIMIT 1");
+$q_tx = mysqli_query($conn, "SELECT id, user_id, status, payment_status, snap_token, midtrans_order_id FROM `$table_name` WHERE id = '$tx_id' $where_owner LIMIT 1");
 
-if (!$q_rental || mysqli_num_rows($q_rental) === 0) {
-    header("location:../user/riwayat.php?pesan=" . urlencode("Data transaksi tidak ditemukan atau akses ditolak."));
+if (!$q_tx || mysqli_num_rows($q_tx) === 0) {
+    header("location:$redirect_base?pesan=" . urlencode("Data transaksi tidak ditemukan atau akses ditolak."));
     exit;
 }
 
-$rental = mysqli_fetch_assoc($q_rental);
+$tx = mysqli_fetch_assoc($q_tx);
 
-if ($rental['payment_status'] === 'Lunas') {
-    header("location:../user/riwayat.php?sukses=" . urlencode("Pembayaran transaksi sudah terkonfirmasi LUNAS."));
+if (($tx['payment_status'] ?? '') === 'Lunas') {
+    header("location:$redirect_base?sukses=" . urlencode("Pembayaran transaksi sudah terkonfirmasi LUNAS."));
     exit;
 }
+
+$apply_fn = ($tx_type === 'order') ? 'midtrans_apply_order_payment_status' : 'midtrans_apply_rental_payment_status';
 
 // 1. MODE REAL MIDTRANS (Sandbox/Production): Wajib verifikasi langsung ke API Midtrans
 if (!midtrans_is_simulator()) {
-    $midtrans_oid = !empty($rental['midtrans_order_id']) ? $rental['midtrans_order_id'] : $order_id;
+    $midtrans_oid = !empty($tx['midtrans_order_id']) ? $tx['midtrans_order_id'] : $order_id;
     $api_res = midtrans_get_transaction_status($midtrans_oid);
 
     if (!$api_res['success'] || empty($api_res['data'])) {
-        header("location:../user/riwayat.php?pesan=" . urlencode("Pembayaran belum terkonfirmasi di Midtrans. Silakan selesaikan pembayaran atau cek kembali beberapa saat lagi."));
+        header("location:$redirect_base?pesan=" . urlencode("Pembayaran belum terkonfirmasi di Midtrans. Silakan selesaikan pembayaran atau cek kembali beberapa saat lagi."));
         exit;
     }
 
@@ -67,37 +72,40 @@ if (!midtrans_is_simulator()) {
     $actual_pay_type = $tx_data['payment_type'] ?? $pay_type;
 
     if ($mapped_status !== null) {
-        midtrans_apply_rental_payment_status($conn, $rental_id, $mapped_status, 'Midtrans (' . $actual_pay_type . ')');
+        $apply_fn($conn, $tx_id, $mapped_status, 'Midtrans (' . $actual_pay_type . ')');
     }
 
     if ($mapped_status === 'Lunas') {
-        header("location:../user/riwayat.php?sukses=" . urlencode("Pembayaran online terverifikasi LUNAS oleh Midtrans!"));
+        $msg = ($tx_type === 'order')
+            ? "Pembayaran pesanan toko terverifikasi LUNAS oleh Midtrans! Pesanan segera diproses."
+            : "Pembayaran sewa online terverifikasi LUNAS oleh Midtrans!";
+        header("location:$redirect_base?sukses=" . urlencode($msg));
     } elseif ($mapped_status === 'Pembayaran Ditolak') {
-        header("location:../user/riwayat.php?pesan=" . urlencode("Pembayaran dibatalkan, ditolak, atau kedaluwarsa."));
+        header("location:$redirect_base?pesan=" . urlencode("Pembayaran dibatalkan, ditolak, atau kedaluwarsa."));
     } else {
-        header("location:../user/riwayat.php?pesan=" . urlencode("Pembayaran Anda sedang menunggu verifikasi/penyelesaian."));
+        header("location:$redirect_base?pesan=" . urlencode("Pembayaran Anda sedang menunggu verifikasi/penyelesaian."));
     }
     exit;
 }
 
 // 2. MODE SIMULATOR (Placeholder Keys): Wajib ada token simulator yang valid dari get_snap_token.php
-if (strpos($rental['snap_token'] ?? '', 'MOCK-SNAP-') !== 0) {
-    header("location:../user/riwayat.php?pesan=" . urlencode("Sesi pembayaran simulator tidak valid. Silakan klik tombol Bayar terlebih dahulu."));
+if (strpos($tx['snap_token'] ?? '', 'MOCK-SNAP-') !== 0) {
+    header("location:$redirect_base?pesan=" . urlencode("Sesi pembayaran simulator tidak valid. Silakan klik tombol Bayar terlebih dahulu."));
     exit;
 }
 
 if ($status === 'success' || $status === 'settlement') {
-    midtrans_apply_rental_payment_status($conn, $rental_id, 'Lunas', 'Online (' . $pay_type . ')');
-    header("location:../user/riwayat.php?sukses=" . urlencode("Pembayaran online berhasil! Pesanan Anda telah berstatus LUNAS dan otomatis dikonfirmasi."));
+    $apply_fn($conn, $tx_id, 'Lunas', 'Online (' . $pay_type . ')');
+    header("location:$redirect_base?sukses=" . urlencode("Pembayaran online berhasil! Pesanan Anda telah berstatus LUNAS dan otomatis dikonfirmasi."));
     exit;
 }
 
 if ($status === 'pending') {
-    midtrans_apply_rental_payment_status($conn, $rental_id, 'Menunggu Pembayaran', 'Online (' . $pay_type . ')');
-    header("location:../user/riwayat.php?pesan=" . urlencode("Pembayaran Anda sedang diproses. Silakan selesaikan pembayaran."));
+    $apply_fn($conn, $tx_id, 'Menunggu Pembayaran', 'Online (' . $pay_type . ')');
+    header("location:$redirect_base?pesan=" . urlencode("Pembayaran Anda sedang diproses. Silakan selesaikan pembayaran."));
     exit;
 }
 
-header("location:../user/riwayat.php");
+header("location:$redirect_base");
 exit;
 ?>

@@ -11,6 +11,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'user') {
 }
 
 include '../config/config.php';
+require_once __DIR__ . '/../config/midtrans.php';
 /** @var mysqli $conn */
 
 $user_id = $_SESSION['user_id'] ?? null;
@@ -53,6 +54,9 @@ $res_orders = mysqli_query($conn, $query_orders);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Midtrans Snap JS -->
+    <script type="text/javascript" src="<?php echo htmlspecialchars(MIDTRANS_SNAP_JS); ?>" data-client-key="<?php echo htmlspecialchars(MIDTRANS_CLIENT_KEY); ?>"></script>
 
     <style>
         :root {
@@ -640,8 +644,11 @@ $res_orders = mysqli_query($conn, $query_orders);
                         </div>
 
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-                            <!-- Indikator & Tombol Upload Bukti Bayar jika belum lunas -->
+                            <!-- Bayar Online Midtrans & Upload Bukti Manual jika belum lunas -->
                             <?php if ($pay_st !== 'Lunas' && $st !== 'Dibatalkan'): ?>
+                                <button type="button" onclick="payOrderOnline(<?php echo $ord['id']; ?>, this)" class="btn-act-pay" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); box-shadow: 0 2px 8px rgba(5, 150, 105, 0.28);">
+                                    <span>Bayar Online</span>
+                                </button>
                                 <?php if ($has_proof): ?>
                                     <span class="proof-sent-pill">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -653,8 +660,8 @@ $res_orders = mysqli_query($conn, $query_orders);
                                         <span>Ganti Bukti</span>
                                     </button>
                                 <?php else: ?>
-                                    <button type="button" onclick="openUploadModal(<?php echo $ord['id']; ?>, '<?php echo htmlspecialchars(addslashes($ord['order_code'])); ?>', '<?php echo number_format($ord['total_price'], 0, ',', '.'); ?>')" class="btn-act-pay">
-                                        <span>Upload Bukti Bayar</span>
+                                    <button type="button" onclick="openUploadModal(<?php echo $ord['id']; ?>, '<?php echo htmlspecialchars(addslashes($ord['order_code'])); ?>', '<?php echo number_format($ord['total_price'], 0, ',', '.'); ?>')" class="btn-act-outline">
+                                        <span>Upload Bukti Manual</span>
                                     </button>
                                 <?php endif; ?>
                             <?php endif; ?>
@@ -1019,6 +1026,63 @@ $res_orders = mysqli_query($conn, $query_orders);
 
         function closeProofPreviewModal() {
             document.getElementById('proofPreviewModal').style.display = 'none';
+        }
+
+        function payOrderOnline(orderId, btnEl) {
+            const origHtml = btnEl ? btnEl.innerHTML : '';
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerHTML = '<span>Memuat Midtrans...</span>';
+            }
+
+            const formData = new FormData();
+            formData.append('order_id', orderId);
+
+            fetch('../payment/get_snap_token.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = origHtml;
+                }
+                if (data.success && data.token && !data.simulator) {
+                    if (typeof window.snap !== 'undefined' && typeof window.snap.pay === 'function') {
+                        window.snap.pay(data.token, {
+                            onSuccess: function(result) {
+                                const oid = encodeURIComponent(result.order_id || data.order_id || '');
+                                const ptype = encodeURIComponent(result.payment_type || 'snap');
+                                window.location.href = '../payment/finish_payment.php?type=order&id=' + orderId + '&order_id=' + oid + '&status=success&payment_type=' + ptype;
+                            },
+                            onPending: function(result) {
+                                const oid = encodeURIComponent(result.order_id || data.order_id || '');
+                                window.location.href = '../payment/finish_payment.php?type=order&id=' + orderId + '&order_id=' + oid + '&status=pending';
+                            },
+                            onError: function() {
+                                showToast('Pembayaran gagal atau dibatalkan.');
+                            },
+                            onClose: function() {
+                                showToast('Popup pembayaran ditutup sebelum selesai.');
+                            }
+                        });
+                    } else if (data.redirect_url) {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        alert('Snap Midtrans belum siap. Silakan muat ulang halaman.');
+                    }
+                } else {
+                    alert(data.error || 'Gagal memulai pembayaran online Midtrans.');
+                }
+            })
+            .catch(() => {
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = origHtml;
+                }
+                alert('Terjadi gangguan koneksi ke server pembayaran Midtrans.');
+            });
         }
 
         window.addEventListener('keydown', function(e) {

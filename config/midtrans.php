@@ -240,4 +240,35 @@ function midtrans_apply_rental_payment_status($conn, $rental_id, $new_payment_st
         payment_date = NOW()
     WHERE id = '$rid'");
 }
+
+/**
+ * Terapkan pembaruan status pembayaran pesanan toko (orders) secara idempoten
+ * @param mysqli $conn
+ * @param int $order_id
+ * @param string $new_payment_status
+ * @param string $method_label
+ * @return bool
+ */
+function midtrans_apply_order_payment_status($conn, $order_id, $new_payment_status, $method_label) {
+    $oid = (int)$order_id;
+    if ($oid <= 0 || empty($new_payment_status)) {
+        return false;
+    }
+
+    $safe_status = mysqli_real_escape_string($conn, $new_payment_status);
+    $safe_method = mysqli_real_escape_string($conn, $method_label);
+
+    if ($new_payment_status === 'Lunas') {
+        return (bool)mysqli_query($conn, "UPDATE orders SET 
+            payment_status = 'Lunas',
+            payment_method = '$safe_method',
+            status = IF(status IN ('Dikirim', 'Selesai'), status, 'Diproses')
+        WHERE id = '$oid'");
+    }
+
+    return (bool)mysqli_query($conn, "UPDATE orders SET 
+        payment_status = '$safe_status',
+        payment_method = '$safe_method'
+    WHERE id = '$oid'");
+}
 ?>

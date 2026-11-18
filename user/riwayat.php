@@ -1637,12 +1637,16 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                             console.log('Customer closed the payment popup');
                         }
                     });
-                } else {
-                    // Buka Gateway Modal Simulator Otomatis
+                } else if (data.success && !data.simulator && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else if (data.success && data.simulator) {
+                    // Buka Gateway Modal Simulator Otomatis (hanya jika key belum diisi)
                     document.getElementById('gatewayCodeTxt').innerText = 'Kode: ' + rentalCode;
                     document.getElementById('gatewayTotalTxt').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAmount);
                     document.getElementById('gatewayProductTxt').innerText = productName;
                     document.getElementById('gatewayModal').style.display = 'flex';
+                } else {
+                    alert(data.error || 'Gagal memulai pembayaran Midtrans.');
                 }
             })
             .catch(err => {

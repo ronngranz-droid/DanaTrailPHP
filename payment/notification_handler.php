@@ -37,12 +37,19 @@ $new_payment_status = midtrans_map_transaction_status($transaction_status, $frau
 
 if ($new_payment_status !== null) {
     $parts = explode('-', $order_id);
-    $rental_code = $parts[0] . '-' . ($parts[1] ?? '') . '-' . ($parts[2] ?? '');
-    $safe_rc = mysqli_real_escape_string($conn, $rental_code);
+    $base_code = $parts[0] . '-' . ($parts[1] ?? '') . '-' . ($parts[2] ?? '');
+    $safe_bc = mysqli_real_escape_string($conn, $base_code);
 
-    $find = mysqli_query($conn, "SELECT id FROM rentals WHERE midtrans_order_id = '$order_id' OR rental_code = '$order_id' OR rental_code = '$safe_rc' LIMIT 1");
-    if ($find && $row = mysqli_fetch_assoc($find)) {
+    // 1. Cek di tabel rentals (sewa)
+    $find_rent = mysqli_query($conn, "SELECT id FROM rentals WHERE midtrans_order_id = '$order_id' OR rental_code = '$order_id' OR rental_code = '$safe_bc' LIMIT 1");
+    if ($find_rent && $row = mysqli_fetch_assoc($find_rent)) {
         midtrans_apply_rental_payment_status($conn, (int)$row['id'], $new_payment_status, 'Midtrans (' . $payment_type . ')');
+    } else {
+        // 2. Cek di tabel orders (pembelian toko)
+        $find_ord = mysqli_query($conn, "SELECT id FROM orders WHERE midtrans_order_id = '$order_id' OR order_code = '$order_id' OR order_code = '$safe_bc' LIMIT 1");
+        if ($find_ord && $row_o = mysqli_fetch_assoc($find_ord)) {
+            midtrans_apply_order_payment_status($conn, (int)$row_o['id'], $new_payment_status, 'Midtrans (' . $payment_type . ')');
+        }
     }
 }
 
