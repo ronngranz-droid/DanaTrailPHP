@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "functions": {
+    "api/index.php": {
+      "runtime": "vercel-php@0.7.4",
+      "includeFiles": "{*.php,admin/**,user/**,config/**,payment/**,uploads/**}"
+    }
+  },
+  "routes": [
+    { "src": "^/$", "dest": "/api/index.php" },
+    { "src": "^/(.+\\.php)$", "dest": "/api/index.php" },
+    { "src": "^/(config|database)/(.*)$", "status": 403 },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/api/index.php" }
+  ]
+}

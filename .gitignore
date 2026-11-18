@@ -1,5 +1,7 @@
-# Local Secrets
+# Local Secrets & DB Dumps
 config/midtrans.local.php
+database/danatrail.sql
+.vercel/
 
 # Local IDE, Agent & Tooling Artifacts
 .agents/
