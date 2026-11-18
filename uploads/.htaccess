@@ -1,0 +1,7 @@
+# Keamanan Direktori Upload DANATRAIL
+# Mencegah eksekusi script berbahaya yang diunggah user
+<FilesMatch "(?i)\.(php|phtml|php3|php4|php5|php7|php8|phps|cgi|pl|exe|sh|bat|cmd)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+Options -Indexes -ExecCGI

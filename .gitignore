@@ -1,0 +1,13 @@
+# Local Secrets
+config/midtrans.local.php
+
+# Local IDE, Agent & Tooling Artifacts
+.agents/
+.vscode/
+graphify-out/
+
+# OS & Logs
+.DS_Store
+Thumbs.db
+*.log
+

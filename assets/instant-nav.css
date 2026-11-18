@@ -1,0 +1,42 @@
+/* ==========================================================================
+   DANATRAIL INSTANT PAGE TRANSITION & PROGRESS BAR
+   ========================================================================== */
+
+#instant-nav-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #f5b800, #10b981, #34d399);
+    z-index: 999999;
+    pointer-events: none;
+    transition: width 0.18s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.25s ease;
+    opacity: 0;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.7), 0 0 5px rgba(245, 184, 0, 0.8);
+}
+
+#instant-nav-progress.active {
+    opacity: 1;
+}
+
+#instant-nav-progress.done {
+    opacity: 0;
+    transition: width 0.1s ease, opacity 0.25s ease 0.05s;
+}
+
+/* Page Micro Transition Animation */
+.instant-page-animating {
+    animation: instantPageFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes instantPageFadeIn {
+    from {
+        opacity: 0.85;
+        transform: translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
