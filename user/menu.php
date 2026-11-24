@@ -12,58 +12,21 @@ global $conn;
 ?>
 
 <aside class="sidebar" id="appSidebar">
-    <!-- Transparent Radiant Mountain Background Watermark -->
-    <div class="sidebar-mountain-backdrop" aria-hidden="true">
-        <svg viewBox="0 0 280 260" fill="none" xmlns="http://www.w3.org/2000/svg" class="sidebar-mountain-svg" preserveAspectRatio="none">
-            <defs>
-                <radialGradient id="summitRadiance" cx="140" cy="110" r="120" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#f5b800" stop-opacity="0.25"/>
-                    <stop offset="0.45" stop-color="#10b981" stop-opacity="0.12"/>
-                    <stop offset="1" stop-color="#041f14" stop-opacity="0"/>
-                </radialGradient>
-                <linearGradient id="transPeakBack" x1="140" y1="60" x2="140" y2="260" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#34d399" stop-opacity="0.28"/>
-                    <stop offset="0.5" stop-color="#059669" stop-opacity="0.1"/>
-                    <stop offset="1" stop-color="#041f14" stop-opacity="0"/>
-                </linearGradient>
-                <linearGradient id="transPeakMid" x1="140" y1="120" x2="140" y2="260" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#10b981" stop-opacity="0.32"/>
-                    <stop offset="0.5" stop-color="#047857" stop-opacity="0.12"/>
-                    <stop offset="1" stop-color="#022c22" stop-opacity="0.02"/>
-                </linearGradient>
-                <linearGradient id="transPeakFront" x1="140" y1="170" x2="140" y2="260" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#6ee7b7" stop-opacity="0.22"/>
-                    <stop offset="0.4" stop-color="#065f46" stop-opacity="0.15"/>
-                    <stop offset="1" stop-color="#041f14" stop-opacity="0.05"/>
-                </linearGradient>
-                <linearGradient id="contourGold" x1="0" y1="0" x2="280" y2="260" gradientUnits="userSpaceOnUse">
-                    <stop stop-color="#fbbf24" stop-opacity="0.4"/>
-                    <stop offset="0.7" stop-color="#34d399" stop-opacity="0.2"/>
-                    <stop offset="1" stop-color="#10b981" stop-opacity="0.05"/>
-                </linearGradient>
-            </defs>
-            <circle cx="140" cy="110" r="100" fill="url(#summitRadiance)" />
-            <path d="M-20 260L25 150L75 180L140 70L205 140L245 110L300 260H-20Z" fill="url(#transPeakBack)" />
-            <path d="M-20 260L25 150L75 180L140 70L205 140L245 110L300 260" stroke="url(#contourGold)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.6"/>
-            <path d="M140 70L132 88L140 84L148 90L140 70Z" fill="#ffffff" opacity="0.35" />
-            <path d="M-30 260L35 180L95 120L160 175L215 120L270 185L310 260H-30Z" fill="url(#transPeakMid)" />
-            <path d="M-20 260L20 205L70 175L130 215L185 160L240 210L300 185V260H-20Z" fill="url(#transPeakFront)" />
-        </svg>
-    </div>
-
     <!-- Sidebar Top Section -->
     <div class="sidebar-top-group">
         <!-- Brand Header -->
         <div class="sidebar-header">
-            <div class="sidebar-brand-wrapper">
+            <a href="about.php" class="sidebar-brand-wrapper" style="text-decoration: none;">
                 <div class="sidebar-logo">
-                    <img src="../assets/logo.png" alt="DANATRAIL" onerror="this.src='https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=80&auto=format&fit=crop&q=60'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
                 </div>
                 <div class="sidebar-brand-text">
                     <span class="brand-title">DANATRAIL</span>
-                    <span class="brand-tagline">Outdoor Store & Rental</span>
+                    <span class="brand-tagline">Outdoor Equipment & Rental</span>
                 </div>
-            </div>
+            </a>
             <button type="button" class="sidebar-mobile-close" onclick="toggleMobileSidebar()" aria-label="Tutup Navigasi">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -71,29 +34,29 @@ global $conn;
             </button>
         </div>
 
-        <!-- User Profile Badge -->
-        <a href="profile.php" class="user-profile-badge" style="text-decoration: none; display: flex;" title="Buka Pengaturan Profil & Akun">
+        <!-- User Profile Card -->
+        <a href="profile.php" class="user-profile-badge" title="Buka Pengaturan Profil & Akun">
             <div class="user-avatar-wrap">
                 <div class="user-avatar-initial">
                     <?php echo strtoupper(substr($userName, 0, 2)); ?>
                 </div>
-                <span class="status-indicator-dot" title="Member Aktif Online"></span>
+                <span class="status-indicator-dot" title="Member Aktif"></span>
             </div>
             <div class="user-details">
                 <span class="user-display-name" title="<?php echo htmlspecialchars($userName); ?>">
                     <?php echo htmlspecialchars($userName); ?>
                 </span>
                 <span class="user-role-chip">
-                    <span class="online-user-dot"></span> Pengaturan Profil
+                    <span class="online-user-dot"></span> Member Basecamp
                 </span>
             </div>
         </a>
 
         <!-- Sidebar Navigation -->
         <nav class="sidebar-nav">
-            <div class="nav-group-label">Menu Navigasi</div>
+            <div class="nav-group-label">Menu Utama</div>
             
-            <!-- 1. Beranda (Landing Page) -->
+            <!-- 1. Beranda -->
             <a href="about.php" class="nav-item <?php echo ($current_page == 'about.php') ? 'active' : ''; ?>">
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -113,6 +76,8 @@ global $conn;
                 <span class="nav-label">Katalog Perlengkapan</span>
             </a>
 
+            <div class="nav-group-label" style="margin-top: 14px;">Aktivitas Saya</div>
+
             <!-- 3. Riwayat Sewa -->
             <a href="riwayat.php" class="nav-item <?php echo ($current_page == 'riwayat.php') ? 'active' : ''; ?>">
                 <div class="nav-icon">
@@ -123,7 +88,7 @@ global $conn;
                 <span class="nav-label">Riwayat Sewa</span>
             </a>
 
-            <!-- 5. Pesanan Toko -->
+            <!-- 4. Pesanan Toko -->
             <a href="pesanan.php" class="nav-item <?php echo ($current_page == 'pesanan.php') ? 'active' : ''; ?>">
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -133,7 +98,7 @@ global $conn;
                 <span class="nav-label">Pesanan Belanja</span>
             </a>
 
-            <!-- 6. Profil Akun -->
+            <!-- 5. Profil Akun -->
             <a href="profile.php" class="nav-item <?php echo ($current_page == 'profile.php') ? 'active' : ''; ?>">
                 <div class="nav-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -148,14 +113,18 @@ global $conn;
     <!-- Sidebar Bottom Section -->
     <div class="sidebar-bottom-group">
         <!-- Basecamp Info Badge -->
-        <div class="sidebar-expedition-badge">
-            <div class="badge-head">
-                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21l7-14 7 14M9 21l3-6 3 6M12 7V3" />
-                </svg>
-                <span>Ekspedisi Gunung</span>
+        <div class="sidebar-basecamp-card">
+            <div class="basecamp-card-head">
+                <span class="basecamp-live-dot"></span>
+                <span>Basecamp Merapi</span>
             </div>
-            <p>Basecamp Buka 08.00 – 21.00 WIB</p>
+            <p class="basecamp-card-hours">Buka 08.00 – 21.00 WIB</p>
+            <a href="https://wa.me/6288996016686?text=Halo%20Admin%20DANATRAIL,%20saya%20ingin%20bertanya%20seputar%20sewa%20alat" target="_blank" class="basecamp-wa-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                <span>Chat Admin Basecamp</span>
+            </a>
         </div>
 
         <!-- Sidebar Footer / Logout -->
@@ -175,7 +144,7 @@ global $conn;
 
 <style>
     /* ==========================================================================
-       SIDEBAR REFINED MODERN STYLING
+       SIDEBAR REFINED MODERN STYLING (ELEVATED OUTDOOR AESTHETIC)
        ========================================================================== */
     .sidebar {
         width: 260px;
@@ -187,12 +156,12 @@ global $conn;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 20px 16px;
+        padding: 22px 16px;
         box-sizing: border-box;
         overflow-y: auto;
         scrollbar-width: none;
-        background: linear-gradient(180deg, #03180f 0%, #062618 55%, #02120a 100%) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        background: #09120e !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.07);
         flex-shrink: 0;
         z-index: 90;
     }
@@ -203,25 +172,6 @@ global $conn;
 
     .sidebar::-webkit-scrollbar {
         display: none;
-    }
-
-    /* Subtle Mountain Silhouette in Background */
-    .sidebar-mountain-backdrop {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 260px;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.45;
-        overflow: hidden;
-    }
-
-    .sidebar-mountain-svg {
-        width: 100%;
-        height: 100%;
-        display: block;
     }
 
     .sidebar-top-group,
@@ -246,7 +196,7 @@ global $conn;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-bottom: 14px;
+        padding-bottom: 16px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -257,24 +207,16 @@ global $conn;
     }
 
     .sidebar-logo {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        background: #ffffff;
-        padding: 3px;
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1.5px solid #f5b800;
-        box-shadow: 0 0 12px rgba(245, 184, 0, 0.25);
-        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
         flex-shrink: 0;
-    }
-
-    .sidebar-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
     }
 
     .sidebar-brand-text {
@@ -284,20 +226,20 @@ global $conn;
 
     .brand-title {
         font-family: 'Outfit', sans-serif;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 800;
-        letter-spacing: 0.8px;
+        letter-spacing: 0.5px;
         color: #ffffff;
         line-height: 1.1;
     }
 
     .brand-tagline {
         font-size: 9px;
-        font-weight: 700;
-        letter-spacing: 0.8px;
+        font-weight: 600;
+        letter-spacing: 0.6px;
         text-transform: uppercase;
-        color: #f5b800;
-        margin-top: 2px;
+        color: #6ee7b7;
+        margin-top: 3px;
     }
 
     .sidebar-mobile-close {
@@ -314,13 +256,19 @@ global $conn;
     .user-profile-badge {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 11px;
         background: rgba(255, 255, 255, 0.04);
         border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 9px 12px;
+        padding: 10px 12px;
         border-radius: 12px;
-        margin: 14px 0 14px 0;
-        backdrop-filter: blur(6px);
+        margin: 16px 0 16px 0;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .user-profile-badge:hover {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 255, 255, 0.15);
     }
 
     .user-avatar-wrap {
@@ -331,16 +279,16 @@ global $conn;
     .user-avatar-initial {
         width: 32px;
         height: 32px;
-        border-radius: 9px;
-        background: #103824;
-        border: 1px solid #f5b800;
+        border-radius: 8px;
+        background: #132a1e;
+        border: 1px solid rgba(52, 211, 153, 0.4);
         display: flex;
         align-items: center;
         justify-content: center;
         font-family: 'Outfit', sans-serif;
         font-weight: 800;
         font-size: 13px;
-        color: #ffffff;
+        color: #a7f3d0;
     }
 
     .status-indicator-dot {
@@ -350,9 +298,8 @@ global $conn;
         width: 8px;
         height: 8px;
         background: #10b981;
-        border: 1.5px solid #03180f;
+        border: 1.5px solid #09120e;
         border-radius: 50%;
-        box-shadow: 0 0 6px #10b981;
     }
 
     .user-details {
@@ -362,9 +309,9 @@ global $conn;
     }
 
     .user-display-name {
-        font-size: 12.5px;
+        font-size: 13px;
         font-weight: 700;
-        color: #ffffff;
+        color: #f1f5f9;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -373,9 +320,10 @@ global $conn;
     .user-role-chip {
         font-size: 10px;
         font-weight: 600;
-        color: #86efac;
+        color: #94a3b8;
         display: flex;
         align-items: center;
+        margin-top: 1px;
     }
 
     .online-user-dot {
@@ -384,46 +332,48 @@ global $conn;
         height: 5px;
         background: #10b981;
         border-radius: 50%;
-        margin-right: 4px;
+        margin-right: 5px;
     }
 
     /* Navigation */
     .sidebar-nav {
         display: flex;
         flex-direction: column;
-        gap: 5px;
+        gap: 4px;
     }
 
     .nav-group-label {
         font-size: 10px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #6a8275;
+        letter-spacing: 0.8px;
+        color: #475569;
         font-weight: 800;
-        margin: 6px 0 4px 6px;
+        margin: 8px 0 4px 8px;
     }
 
     .nav-item {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 11px;
         padding: 9px 12px;
-        border-radius: 10px;
-        color: #a3b8ac;
+        border-radius: 9px;
+        color: #94a3b8;
         text-decoration: none;
         font-size: 13px;
         font-weight: 600;
-        transition: all 0.18s ease;
+        transition: all 0.16s ease;
         border-left: 3px solid transparent;
     }
 
     .nav-icon {
-        width: 18px;
-        height: 18px;
+        width: 17px;
+        height: 17px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        color: #64748b;
+        transition: color 0.16s ease;
     }
 
     .nav-icon svg {
@@ -432,57 +382,79 @@ global $conn;
     }
 
     .nav-item:hover {
-        background: rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.05);
         color: #ffffff;
-        transform: translateX(2px);
+    }
+
+    .nav-item:hover .nav-icon {
+        color: #ffffff;
     }
 
     .nav-item.active {
-        background: linear-gradient(90deg, rgba(245, 184, 0, 0.16) 0%, rgba(16, 185, 129, 0.08) 100%);
-        color: #ffffff;
+        background: rgba(16, 185, 129, 0.12);
+        color: #34d399;
         font-weight: 700;
-        border-left-color: #f5b800;
-        box-shadow: inset 0 0 10px rgba(245, 184, 0, 0.06);
+        border-left-color: #10b981;
     }
 
     .nav-item.active .nav-icon {
-        color: #f5b800;
+        color: #34d399;
     }
 
-    /* Basecamp Expedition Badge */
-    .sidebar-expedition-badge {
-        background: rgba(4, 28, 18, 0.7);
-        border: 1px solid rgba(52, 211, 153, 0.2);
-        border-radius: 10px;
-        padding: 8px 11px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-        margin-bottom: 10px;
+    /* Basecamp Info Card */
+    .sidebar-basecamp-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 11px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
     }
 
-    .sidebar-expedition-badge .badge-head {
+    .basecamp-card-head {
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 10.5px;
-        font-weight: 800;
+        gap: 7px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #f1f5f9;
         text-transform: uppercase;
-        letter-spacing: 0.6px;
-        color: #f5b800;
-        margin-bottom: 2px;
+        letter-spacing: 0.5px;
     }
 
-    .sidebar-expedition-badge p {
-        font-size: 10px;
-        color: #9ec3af;
-        margin: 0;
-        font-weight: 600;
+    .basecamp-live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.8);
+    }
+
+    .basecamp-card-hours {
+        font-size: 11px;
+        color: #94a3b8;
+        margin: 3px 0 10px 0;
+    }
+
+    .basecamp-wa-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #34d399;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+
+    .basecamp-wa-link:hover {
+        color: #6ee7b7;
+        text-decoration: underline;
     }
 
     /* Sidebar Footer / Logout */
     .sidebar-footer {
         padding-top: 10px;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
 
     .btn-sidebar-logout {
@@ -492,22 +464,20 @@ global $conn;
         gap: 8px;
         width: 100%;
         padding: 8px 12px;
-        border-radius: 9px;
-        background: rgba(239, 68, 68, 0.08);
-        color: #fca5a5;
-        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: 8px;
+        background: rgba(239, 68, 68, 0.06);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.18);
         text-decoration: none;
         font-size: 12px;
         font-weight: 700;
-        transition: all 0.18s ease;
+        transition: all 0.16s ease;
     }
 
     .btn-sidebar-logout:hover {
-        background: #dc2626;
+        background: #ef4444;
         color: #ffffff;
-        border-color: #dc2626;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+        border-color: #ef4444;
     }
 
     @media (max-width: 860px) {
@@ -528,7 +498,6 @@ global $conn;
             display: block;
         }
     }
-
 </style>
 
 <script>
