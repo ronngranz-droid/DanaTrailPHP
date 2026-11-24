@@ -564,6 +564,16 @@ $stats = $q_stats ? mysqli_fetch_assoc($q_stats) : [];
                                         <div style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 800; color: var(--forest-950);">
                                             Rp <?php echo number_format($ord['total_price'], 0, ',', '.'); ?>
                                         </div>
+                                        <?php if ((float)($ord['shipping_cost'] ?? 0) > 0 || (float)($ord['discount_amount'] ?? 0) > 0): ?>
+                                            <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                                                <?php if ((float)($ord['shipping_cost'] ?? 0) > 0): ?>
+                                                    <span>Ongkir: +Rp <?php echo number_format((float)$ord['shipping_cost'], 0, ',', '.'); ?></span>
+                                                <?php endif; ?>
+                                                <?php if ((float)($ord['discount_amount'] ?? 0) > 0): ?>
+                                                    <span style="color: #166e4a; margin-left: 4px;">Disc: -Rp <?php echo number_format((float)$ord['discount_amount'], 0, ',', '.'); ?></span>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start;">

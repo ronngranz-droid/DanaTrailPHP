@@ -214,7 +214,7 @@ function midtrans_apply_rental_payment_status($conn, $rental_id, $new_payment_st
     $safe_method = mysqli_real_escape_string($conn, $method_label);
 
     if ($new_payment_status === 'Lunas') {
-        $find = mysqli_query($conn, "SELECT id, product_id, quantity, status, payment_status FROM rentals WHERE id = '$rid' LIMIT 1");
+        $find = mysqli_query($conn, "SELECT id, product_id, quantity, status, payment_status, total_price, rental_code FROM rentals WHERE id = '$rid' LIMIT 1");
         if (!$find || mysqli_num_rows($find) === 0) {
             return false;
         }
@@ -226,12 +226,23 @@ function midtrans_apply_rental_payment_status($conn, $rental_id, $new_payment_st
             mysqli_query($conn, "UPDATE products SET stock = GREATEST(0, stock - $qty) WHERE id='$pid'");
         }
 
-        return (bool)mysqli_query($conn, "UPDATE rentals SET 
+        $res = mysqli_query($conn, "UPDATE rentals SET 
             payment_status = 'Lunas',
             payment_method = '$safe_method',
             payment_date = NOW(),
             status = IF(status = 'Selesai', 'Selesai', 'Disewa')
         WHERE id = '$rid'");
+
+        if ($res && ($row['payment_status'] ?? '') !== 'Lunas') {
+            require_once __DIR__ . '/stock_cash_helper.php';
+            $r_code = $row['rental_code'] ?? ('DNT-' . $rid);
+            $amount = (float)($row['total_price'] ?? 0);
+            if ($amount > 0) {
+                record_cash_flow($conn, 'in', 'rental', $amount, "Pembayaran Sewa #{$r_code} via {$safe_method}", $rid);
+            }
+        }
+
+        return (bool)$res;
     }
 
     return (bool)mysqli_query($conn, "UPDATE rentals SET 
@@ -259,11 +270,25 @@ function midtrans_apply_order_payment_status($conn, $order_id, $new_payment_stat
     $safe_method = mysqli_real_escape_string($conn, $method_label);
 
     if ($new_payment_status === 'Lunas') {
-        return (bool)mysqli_query($conn, "UPDATE orders SET 
+        $find = mysqli_query($conn, "SELECT id, payment_status, total_price, order_code FROM orders WHERE id = '$oid' LIMIT 1");
+        $ord_row = ($find && mysqli_num_rows($find) > 0) ? mysqli_fetch_assoc($find) : null;
+
+        $res = mysqli_query($conn, "UPDATE orders SET 
             payment_status = 'Lunas',
             payment_method = '$safe_method',
             status = IF(status IN ('Dikirim', 'Selesai'), status, 'Diproses')
         WHERE id = '$oid'");
+
+        if ($res && $ord_row && ($ord_row['payment_status'] ?? '') !== 'Lunas') {
+            require_once __DIR__ . '/stock_cash_helper.php';
+            $o_code = $ord_row['order_code'] ?? ('ORD-' . $oid);
+            $amount = (float)($ord_row['total_price'] ?? 0);
+            if ($amount > 0) {
+                record_cash_flow($conn, 'in', 'order', $amount, "Pembayaran Pesanan Toko #{$o_code} via {$safe_method}", $oid);
+            }
+        }
+
+        return (bool)$res;
     }
 
     return (bool)mysqli_query($conn, "UPDATE orders SET 

@@ -10,6 +10,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== "admin") {
 }
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/discount_fine_helper.php';
 global $conn;
 /** @var mysqli $conn */
 
@@ -100,13 +101,15 @@ if (isset($_GET['batalkan_pesanan'])) {
     }
 
     mysqli_query($conn, "UPDATE orders SET status='Dibatalkan', payment_status='Pembayaran Dibatalkan' WHERE id='$order_id'");
-    header("location:" . $redirect_url . $glue . "sukses=" . urlencode("Pesanan telah dibatalkan dan stok produk telah dikembalikan!"));
+    revert_discount_usage('order', $order_id);
+    header("location:" . $redirect_url . $glue . "sukses=" . urlencode("Pesanan telah dibatalkan, kuota voucher dipulihkan, dan stok produk telah dikembalikan!"));
     exit;
 }
 
 // 5. HAPUS DATA PESANAN
 if (isset($_GET['hapus'])) {
     $order_id = (int)($_GET['hapus'] ?? 0);
+    revert_discount_usage('order', $order_id);
     mysqli_query($conn, "DELETE FROM order_items WHERE order_id='$order_id'");
     mysqli_query($conn, "DELETE FROM orders WHERE id='$order_id'");
     header("location:" . $redirect_url . $glue . "sukses=" . urlencode("Data pesanan berhasil dihapus dari sistem."));

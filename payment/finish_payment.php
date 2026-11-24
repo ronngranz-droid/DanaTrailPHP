@@ -31,6 +31,30 @@ $pay_type  = isset($_GET['payment_type']) ? trim((string)$_GET['payment_type']) 
 
 $redirect_base = ($tx_type === 'order') ? '../user/pesanan.php' : '../user/riwayat.php';
 
+// Jika tx_id tidak disertakan tetapi order_id dari Midtrans ada, cari ID transaksi berdasarkan order_id
+if ($tx_id <= 0 && !empty($order_id)) {
+    $safe_oid = mysqli_real_escape_string($conn, $order_id);
+    $parts = explode('-', $order_id);
+    $base_code = $parts[0] . '-' . ($parts[1] ?? '') . '-' . ($parts[2] ?? '');
+    $safe_bc = mysqli_real_escape_string($conn, $base_code);
+
+    // Cek di rentals
+    $chk_rent = mysqli_query($conn, "SELECT id FROM rentals WHERE midtrans_order_id = '$safe_oid' OR rental_code = '$safe_oid' OR rental_code = '$safe_bc' LIMIT 1");
+    if ($chk_rent && $row_r = mysqli_fetch_assoc($chk_rent)) {
+        $tx_type = 'rental';
+        $tx_id   = (int)$row_r['id'];
+        $redirect_base = '../user/riwayat.php';
+    } else {
+        // Cek di orders
+        $chk_ord = mysqli_query($conn, "SELECT id FROM orders WHERE midtrans_order_id = '$safe_oid' OR order_code = '$safe_oid' OR order_code = '$safe_bc' LIMIT 1");
+        if ($chk_ord && $row_o = mysqli_fetch_assoc($chk_ord)) {
+            $tx_type = 'order';
+            $tx_id   = (int)$row_o['id'];
+            $redirect_base = '../user/pesanan.php';
+        }
+    }
+}
+
 if ($tx_id <= 0) {
     header("location:$redirect_base?pesan=" . urlencode("ID transaksi tidak valid."));
     exit;

@@ -117,7 +117,18 @@ if (isset($_POST['proses_checkout'])) {
     ]);
 
     $discount_amount = (float)$discount_calc['discount_amount'];
-    $final_total = max(0, $total_order - $discount_amount);
+
+    // Hitung ongkos kirim resmi berdasarkan opsi kurir
+    $shipping_cost = 0.00;
+    if (stripos($courier, 'JNE') !== false) {
+        $shipping_cost = 25000.00;
+    } elseif (stripos($courier, 'J&T') !== false) {
+        $shipping_cost = 28000.00;
+    } elseif (stripos($courier, 'SiCepat') !== false) {
+        $shipping_cost = 35000.00;
+    }
+
+    $final_total = max(0, $total_order - $discount_amount) + $shipping_cost;
     $discount_id_sql = $discount_calc['discount_id'] ? "'" . (int)$discount_calc['discount_id'] . "'" : "NULL";
     $discount_code_sql = !empty($discount_calc['discount_code']) ? "'" . mysqli_real_escape_string($conn, $discount_calc['discount_code']) . "'" : "NULL";
 
@@ -131,8 +142,8 @@ if (isset($_POST['proses_checkout'])) {
         $pay_status = 'Menunggu Pembayaran';
         $order_status = 'Menunggu Pembayaran';
 
-        $insert_order = "INSERT INTO orders (order_code, user_id, subtotal_price, discount_id, discount_code, discount_amount, total_price, recipient_name, recipient_phone, shipping_address, courier, payment_method, payment_status, status, notes)
-                         VALUES ('$order_code', '$user_id', '$total_order', $discount_id_sql, $discount_code_sql, '$discount_amount', '$final_total', '$recipient_name', '$recipient_phone', '$shipping_address', '$courier', '$payment_method', '$pay_status', '$order_status', '$notes')";
+        $insert_order = "INSERT INTO orders (order_code, user_id, subtotal_price, discount_id, discount_code, discount_amount, shipping_cost, total_price, recipient_name, recipient_phone, shipping_address, courier, payment_method, payment_status, status, notes)
+                         VALUES ('$order_code', '$user_id', '$total_order', $discount_id_sql, $discount_code_sql, '$discount_amount', '$shipping_cost', '$final_total', '$recipient_name', '$recipient_phone', '$shipping_address', '$courier', '$payment_method', '$pay_status', '$order_status', '$notes')";
 
         if (!mysqli_query($conn, $insert_order)) {
             throw new Exception("Gagal menyimpan data pesanan: " . mysqli_error($conn));
@@ -235,7 +246,8 @@ if (isset($_GET['batal'])) {
                 }
             }
             mysqli_query($conn, "UPDATE orders SET status='Dibatalkan' WHERE id='$order_id'");
-            header("location:pesanan.php?sukses=" . urlencode("Pesanan telah dibatalkan dan stok produk telah dikembalikan."));
+            revert_discount_usage('order', $order_id);
+            header("location:pesanan.php?sukses=" . urlencode("Pesanan telah dibatalkan, kuota voucher dipulihkan, dan stok produk telah dikembalikan."));
             exit;
         }
     }

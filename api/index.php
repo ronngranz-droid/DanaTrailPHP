@@ -154,3 +154,4 @@ $_SERVER['PHP_SELF']        = $reqPath;
 
 chdir(dirname($targetFile));
 require $targetFile;
+

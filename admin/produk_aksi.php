@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include '../config/config.php';
 require_once __DIR__ . '/../config/stock_cash_helper.php';
 /** @var mysqli $conn */

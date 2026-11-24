@@ -1,6 +1,9 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include '../config/config.php';
+require_once __DIR__ . '/../config/discount_fine_helper.php';
 /** @var mysqli $conn */
 
 // Cek apakah admin sudah login
@@ -146,9 +149,10 @@ if (isset($_GET['tolak']) || isset($_POST['tolak_sewa'])) {
         }
 
         $update = mysqli_query($conn, "UPDATE rentals SET status='Dibatalkan' WHERE id='$id'");
+        revert_discount_usage('rental', $id);
 
         if ($update) {
-            header("location:transaksi.php?sukses=Pesanan sewa berhasil ditolak/dibatalkan.");
+            header("location:transaksi.php?sukses=Pesanan sewa berhasil ditolak/dibatalkan dan kuota voucher dipulihkan.");
         } else {
             header("location:transaksi.php?pesan=Gagal membatalkan pesanan.");
         }
@@ -182,6 +186,7 @@ if (isset($_GET['hapus']) || isset($_POST['hapus_sewa'])) {
             unlink('../uploads/payments/' . $data['payment_proof']);
         }
 
+        revert_discount_usage('rental', $id);
         $hapus = mysqli_query($conn, "DELETE FROM rentals WHERE id='$id'");
 
         if ($hapus) {

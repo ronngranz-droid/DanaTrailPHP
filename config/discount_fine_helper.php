@@ -362,6 +362,22 @@ if (!function_exists('record_discount_usage')) {
     }
 }
 
+if (!function_exists('revert_discount_usage')) {
+    /**
+     * Mengembalikan kuota penggunaan diskon saat pesanan atau sewa dibatalkan/dihapus
+     * @param string $transaction_type 'order'|'rental'
+     * @param int $transaction_id
+     * @return bool
+     */
+    function revert_discount_usage($transaction_type, $transaction_id) {
+        global $conn;
+        if (!$transaction_id || $transaction_id <= 0) return false;
+        $ttype = mysqli_real_escape_string($conn, $transaction_type);
+        $tid   = (int)$transaction_id;
+        return (bool)mysqli_query($conn, "DELETE FROM discount_usages WHERE transaction_type='$ttype' AND transaction_id='$tid'");
+    }
+}
+
 /**
  * Catat atau sinkronisasi data denda rental ke tabel rental_fines
  */

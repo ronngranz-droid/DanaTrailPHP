@@ -605,10 +605,10 @@ $user_info = ($q_user && mysqli_num_rows($q_user) > 0) ? mysqli_fetch_assoc($q_u
                         <div class="form-field">
                             <label for="courier_select">Pilih Opsi Pengiriman *</label>
                             <select name="courier" id="courier_select" onchange="toggleShippingMode()" required>
-                                <option value="Ambil Langsung di Basecamp DANATRAIL" selected>Ambil Langsung di Basecamp DANATRAIL (Bebas Ongkir)</option>
-                                <option value="Kurir Ekspedisi JNE Reguler">Kurir Ekspedisi JNE Reguler</option>
-                                <option value="Kurir Ekspedisi J&T Express">Kurir Ekspedisi J&T Express</option>
-                                <option value="Kurir Ekspedisi SiCepat Cargo">Kurir Ekspedisi SiCepat Cargo</option>
+                                <option value="Ambil Langsung di Basecamp DANATRAIL" data-cost="0" selected>Ambil Langsung di Basecamp DANATRAIL (Bebas Ongkir - Rp 0)</option>
+                                <option value="Kurir Ekspedisi JNE Reguler" data-cost="25000">Kurir Ekspedisi JNE Reguler (+Rp 25.000)</option>
+                                <option value="Kurir Ekspedisi J&T Express" data-cost="28000">Kurir Ekspedisi J&T Express (+Rp 28.000)</option>
+                                <option value="Kurir Ekspedisi SiCepat Cargo" data-cost="35000">Kurir Ekspedisi SiCepat Cargo (+Rp 35.000)</option>
                             </select>
                         </div>
 
@@ -795,6 +795,10 @@ $user_info = ($q_user && mysqli_num_rows($q_user) > 0) ? mysqli_fetch_assoc($q_u
                                 <span id="lbl_discount_name">Potongan Diskon:</span>
                                 <span id="lbl_discount_amount">-Rp <?php echo number_format($initial_discount_amount, 0, ',', '.'); ?></span>
                             </div>
+                            <div id="row_shipping" style="display: flex; justify-content: space-between; color: var(--text-muted);">
+                                <span>Ongkos Kirim (<span id="lbl_courier_name">Basecamp</span>):</span>
+                                <strong id="lbl_shipping_cost" style="color: var(--text-main);">Rp 0 (Gratis)</strong>
+                            </div>
                         </div>
 
                         <!-- Total Box -->
@@ -846,6 +850,42 @@ $user_info = ($q_user && mysqli_num_rows($q_user) > 0) ? mysqli_fetch_assoc($q_u
             recalculateDirectTotal();
         }
 
+        let currentSubtotal = unitEffectivePrice * <?php echo $initial_qty; ?>;
+        let currentDiscount = <?php echo $initial_discount_amount; ?>;
+
+        function getSelectedShippingCost() {
+            const sel = document.getElementById('courier_select');
+            if (!sel) return 0;
+            const opt = sel.options[sel.selectedIndex];
+            return opt ? parseFloat(opt.getAttribute('data-cost') || '0') : 0;
+        }
+
+        function updateTotalBreakdown() {
+            const shipping = getSelectedShippingCost();
+            const finalTotal = Math.max(0, currentSubtotal - currentDiscount) + shipping;
+            const lblTotal = document.getElementById('lbl_final_total');
+            if (lblTotal) lblTotal.innerText = formatRupiah(finalTotal);
+
+            const sel = document.getElementById('courier_select');
+            if (!sel) return;
+            const courier = sel.value;
+            const isPickup = courier.includes('Basecamp') || courier.includes('Ambil');
+            const costLabel = document.getElementById('shippingCostLabel');
+            const lblShippingCost = document.getElementById('lbl_shipping_cost');
+            const lblCourierName = document.getElementById('lbl_courier_name');
+
+            if (isPickup) {
+                if (costLabel) costLabel.innerText = 'Bebas Biaya Pengambilan di Basecamp';
+                if (lblCourierName) lblCourierName.innerText = 'Basecamp';
+                if (lblShippingCost) lblShippingCost.innerText = 'Rp 0 (Gratis)';
+            } else {
+                const shortName = courier.replace('Kurir Ekspedisi ', '');
+                if (costLabel) costLabel.innerText = 'Ongkir ' + shortName + ': ' + formatRupiah(shipping);
+                if (lblCourierName) lblCourierName.innerText = shortName;
+                if (lblShippingCost) lblShippingCost.innerText = formatRupiah(shipping);
+            }
+        }
+
         function recalculateDirectTotal() {
             const input = document.getElementById('direct_quantity');
             let qty = parseInt(input.value) || 1;
@@ -858,6 +898,7 @@ $user_info = ($q_user && mysqli_num_rows($q_user) > 0) ? mysqli_fetch_assoc($q_u
             document.getElementById('btnQtyPlus').disabled = (qty >= maxStock);
 
             const subtotal = unitEffectivePrice * qty;
+            currentSubtotal = subtotal;
             document.getElementById('lbl_qty_count').innerText = qty;
             document.getElementById('lbl_subtotal').innerText = formatRupiah(subtotal);
 
@@ -881,25 +922,26 @@ $user_info = ($q_user && mysqli_num_rows($q_user) > 0) ? mysqli_fetch_assoc($q_u
                 const boxBanner = document.getElementById('boxDiscountBanner');
 
                 if (data.success && data.discount_amount > 0) {
+                    currentDiscount = parseFloat(data.discount_amount);
                     rowDiscount.style.display = 'flex';
                     document.getElementById('lbl_discount_name').innerText = 'Potongan (' + (data.discount_name || 'Diskon') + '):';
                     document.getElementById('lbl_discount_amount').innerText = '-' + data.discount_amount_formatted;
-                    document.getElementById('lbl_final_total').innerText = data.total_after_discount_formatted;
                     badgeStatus.style.display = 'inline-block';
                     boxBanner.style.background = '#f0fdf4';
                     boxBanner.style.border = '1.5px solid #86efac';
                     textDesc.innerHTML = '<strong>' + (data.discount_name || 'Promo') + '</strong> diterapkan! Anda hemat <strong>' + data.discount_amount_formatted + '</strong>.';
                 } else {
+                    currentDiscount = 0;
                     rowDiscount.style.display = 'none';
-                    document.getElementById('lbl_final_total').innerText = formatRupiah(subtotal);
                     badgeStatus.style.display = 'none';
                     boxBanner.style.background = '#fafaf9';
                     boxBanner.style.border = '1.5px dashed var(--border-color)';
                     textDesc.innerText = 'Diskon otomatis akan langsung aktif jika total belanja Anda memenuhi syarat promo toko.';
                 }
+                updateTotalBreakdown();
             })
             .catch(() => {
-                document.getElementById('lbl_final_total').innerText = formatRupiah(subtotal);
+                updateTotalBreakdown();
             });
         }
 
@@ -909,19 +951,17 @@ $user_info = ($q_user && mysqli_num_rows($q_user) > 0) ? mysqli_fetch_assoc($q_u
             const pickupView = document.getElementById('pickupInfoView');
             const expeditionView = document.getElementById('expeditionAddressView');
             const addressInput = document.getElementById('shipping_address');
-            const costLabel = document.getElementById('shippingCostLabel');
 
             if (isPickup) {
                 pickupView.classList.remove('hidden');
                 expeditionView.classList.add('hidden');
                 addressInput.removeAttribute('required');
-                costLabel.innerText = 'Bebas Biaya Pengambilan di Basecamp';
             } else {
                 pickupView.classList.add('hidden');
                 expeditionView.classList.remove('hidden');
                 addressInput.setAttribute('required', 'required');
-                costLabel.innerText = 'Estimasi Ongkir Ekspedisi Menyesuaikan Tujuan';
             }
+            updateTotalBreakdown();
         }
 
         // Anti-double-submission: cegah transaksi ganda jika user klik tombol berkali-kali

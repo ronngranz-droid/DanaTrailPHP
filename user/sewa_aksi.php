@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 include '../config/config.php';
 require_once __DIR__ . '/../config/discount_fine_helper.php';
 /** @var mysqli $conn */
@@ -267,7 +269,8 @@ if (isset($_GET['batal']) || isset($_POST['batal_sewa'])) {
         $r = mysqli_fetch_assoc($cek);
         if ($r['status'] === 'Menunggu Konfirmasi') {
             mysqli_query($conn, "UPDATE rentals SET status='Dibatalkan' WHERE id='$rental_id'");
-            header("location:riwayat.php?sukses=Pesanan sewa berhasil dibatalkan.");
+            revert_discount_usage('rental', $rental_id);
+            header("location:riwayat.php?sukses=Pesanan sewa berhasil dibatalkan dan kuota voucher Anda dipulihkan.");
             exit;
         } else {
             header("location:riwayat.php?pesan=Pesanan tidak dapat dibatalkan karena sudah diproses!");

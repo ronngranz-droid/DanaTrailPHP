@@ -70,8 +70,8 @@ function get_store_cash_balance($conn) {
     $q_restock = mysqli_query($conn, "SELECT COALESCE(SUM(total_cost), 0) as total FROM stock_logs WHERE total_cost > 0");
     $total_restock_spent = $q_restock ? (float)mysqli_fetch_assoc($q_restock)['total'] : 0.00;
 
-    // 4. Mutasi manual di store_cash_flow kategori di luar pesanan & restock
-    $q_cf_in = mysqli_query($conn, "SELECT COALESCE(SUM(amount), 0) as total FROM store_cash_flow WHERE type='in' AND category NOT IN ('order', 'rental')");
+    // 4. Mutasi manual di store_cash_flow kategori di luar pesanan, sewa, & modal awal
+    $q_cf_in = mysqli_query($conn, "SELECT COALESCE(SUM(amount), 0) as total FROM store_cash_flow WHERE type='in' AND category NOT IN ('order', 'rental', 'initial_capital')");
     $cf_in = $q_cf_in ? (float)mysqli_fetch_assoc($q_cf_in)['total'] : 0.00;
 
     $q_cf_out = mysqli_query($conn, "SELECT COALESCE(SUM(amount), 0) as total FROM store_cash_flow WHERE type='out' AND category NOT IN ('restock', 'new_product')");

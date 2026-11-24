@@ -697,8 +697,14 @@ if ($is_store_order) {
                         </tr>
                         <?php endif; ?>
                         <tr>
-                            <td class="total-label">Biaya Pengiriman</td>
-                            <td class="total-val" style="color: var(--emerald-600);">Gratis Ongkir</td>
+                            <td class="total-label">Biaya Pengiriman (<?php echo htmlspecialchars($order['courier'] ?? 'Kurir'); ?>)</td>
+                            <td class="total-val">
+                                <?php if ((float)($order['shipping_cost'] ?? 0) > 0): ?>
+                                    Rp <?php echo number_format((float)$order['shipping_cost'], 0, ',', '.'); ?>
+                                <?php else: ?>
+                                    <span style="color: var(--emerald-600); font-weight: 700;">Gratis Ongkir</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                         <tr class="grand-row">
                             <td>TOTAL AKHIR</td>

@@ -626,8 +626,8 @@ $res_orders = mysqli_query($conn, $query_orders);
                     <!-- Order Footer -->
                     <div class="order-footer-bar">
                         <div>
-                            <?php if ((float)($ord['discount_amount'] ?? 0) > 0): ?>
-                                <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 2px;">
+                            <div style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 2px;">
+                                <?php if ((float)($ord['discount_amount'] ?? 0) > 0): ?>
                                     Subtotal: <span style="text-decoration: line-through;">Rp <?php echo number_format($ord['subtotal_price'] ?? ($ord['total_price'] + $ord['discount_amount']), 0, ',', '.'); ?></span>
                                     <span style="color: #166e4a; font-weight: 700; margin-left: 6px;">
                                         Diskon: -Rp <?php echo number_format($ord['discount_amount'], 0, ',', '.'); ?>
@@ -635,8 +635,13 @@ $res_orders = mysqli_query($conn, $query_orders);
                                             (<?php echo htmlspecialchars($ord['discount_code']); ?>)
                                         <?php endif; ?>
                                     </span>
-                                </div>
-                            <?php endif; ?>
+                                <?php endif; ?>
+                                <?php if ((float)($ord['shipping_cost'] ?? 0) > 0): ?>
+                                    <span style="color: var(--text-muted); margin-left: <?php echo ((float)($ord['discount_amount'] ?? 0) > 0) ? '8px' : '0'; ?>;">
+                                        Ongkir: <strong>Rp <?php echo number_format((float)$ord['shipping_cost'], 0, ',', '.'); ?></strong>
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                             <span style="font-size: 11.5px; color: var(--text-muted);">Total Belanja:</span>
                             <strong style="font-family: 'Outfit', sans-serif; font-size: 17px; color: var(--forest-900); margin-left: 6px;">
                                 Rp <?php echo number_format($ord['total_price'], 0, ',', '.'); ?>

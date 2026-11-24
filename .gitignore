@@ -13,3 +13,5 @@ graphify-out/
 Thumbs.db
 *.log
 
+
+.vercel
