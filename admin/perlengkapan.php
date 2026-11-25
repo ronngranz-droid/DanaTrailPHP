@@ -1791,13 +1791,6 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
                                     </td>
                                     <td>
                                         <div class="table-actions-cell">
-                                            <button type="button" class="btn-action-edit" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;" onclick="openModalRestock(<?php echo htmlspecialchars(json_encode($p), ENT_QUOTES, 'UTF-8'); ?>)" title="Restock unit dan potong kas">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                                <span>Restock</span>
-                                            </button>
-
                                             <button type="button" class="btn-action-edit" onclick="openModalEdit(<?php echo htmlspecialchars(json_encode($p), ENT_QUOTES, 'UTF-8'); ?>)">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -2128,127 +2121,6 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
                 <div class="modal-footer-bar">
                     <button type="button" class="btn-modal-cancel-btn" onclick="closeModalEdit()">Batal</button>
                     <button type="submit" name="edit_produk" class="btn-modal-confirm-btn">Perbarui Perlengkapan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ==========================================================================
-         MODAL 3: RESTOCK PERLENGKAPAN CEPAT
-         ========================================================================== -->
-    <div class="modal-overlay" id="modalRestockOverlay" role="dialog" aria-modal="true">
-        <div class="modal-dialog">
-            <div class="modal-header-bar">
-                <div>
-                    <h3>Restock Unit Perlengkapan</h3>
-                    <p style="font-size: 12px; color: #a7f3d0; margin-top: 2px;">Tambah stok barang sewa atau barang toko langsung ke inventaris.</p>
-                </div>
-                <button type="button" class="btn-modal-close-icon" onclick="closeModalRestock()" aria-label="Tutup">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-
-            <form action="produk_aksi.php" method="POST" id="formRestock">
-                <input type="hidden" name="product_id" id="restock_product_id" value="">
-                <input type="hidden" name="redirect_to" value="<?php echo htmlspecialchars($current_request_uri); ?>">
-
-                <div class="modal-body-scroll">
-                    <!-- Info Barang Terpilih -->
-                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;">
-                        <div id="restock_thumb_box" style="width: 48px; height: 48px; border-radius: var(--radius-sm); overflow: hidden; background: #e2e8f0; flex-shrink: 0;">
-                            <img id="restock_thumb_img" src="" alt="Foto" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        <div style="min-width: 0; flex: 1;">
-                            <h4 id="restock_product_name" style="font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nama Barang</h4>
-                            <div style="display: flex; gap: 8px; font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">
-                                <span>Stok Sewa: <strong id="restock_current_rental" style="color: var(--forest-900);">0</strong> unit</span>
-                                <span>•</span>
-                                <span>Stok Toko: <strong id="restock_current_sale" style="color: #1e40af;">0</strong> unit</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pilihan Target Restock -->
-                    <div class="form-field-group">
-                        <label>Target Stok yang Ditambah *</label>
-                        <div class="type-radio-group">
-                            <label class="type-radio-card selected" id="card_restock_target_rental">
-                                <input type="radio" name="restock_target" id="rt_rental" value="rental" checked onchange="handleRestockTargetChange(this.value)">
-                                <span>Unit Sewa</span>
-                            </label>
-                            <label class="type-radio-card" id="card_restock_target_sale">
-                                <input type="radio" name="restock_target" id="rt_sale" value="sale" onchange="handleRestockTargetChange(this.value)">
-                                <span>Unit Toko</span>
-                            </label>
-                            <label class="type-radio-card" id="card_restock_target_both">
-                                <input type="radio" name="restock_target" id="rt_both" value="both" onchange="handleRestockTargetChange(this.value)">
-                                <span>Keduanya</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Input Jumlah Tambah -->
-                    <div class="form-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
-                        <div class="form-field-group" id="group_qty_rental">
-                            <label for="restock_qty_rental">Tambah Unit Sewa *</label>
-                            <input type="number" name="qty_rental" id="restock_qty_rental" value="5" min="0" oninput="calculateRestockCostSummary()">
-                        </div>
-                        <div class="form-field-group" id="group_qty_sale" style="display: none;">
-                            <label for="restock_qty_sale">Tambah Unit Jual *</label>
-                            <input type="number" name="qty_sale" id="restock_qty_sale" value="0" min="0" oninput="calculateRestockCostSummary()">
-                        </div>
-                    </div>
-
-                    <!-- Biaya Modal Pengadaan Restock -->
-                    <div class="form-field-group" style="margin-top: 10px;">
-                        <label for="restock_cost_per_unit">Harga Modal Beli / Biaya Pengadaan (Rp / unit) *</label>
-                        <div style="position: relative;">
-                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b; font-size: 13px;">Rp</span>
-                            <input type="number" name="cost_per_unit" id="restock_cost_per_unit" min="0" placeholder="0" style="padding-left: 38px;" oninput="calculateRestockCostSummary()">
-                        </div>
-                        <small style="color: #64748b; font-size: 11.5px; margin-top: 4px; display: block;">Biaya ini akan langsung memotong uang saldo kas toko dari penjualan.</small>
-                    </div>
-
-                    <!-- Panel Kalkulasi Saldo Kas Toko & Nilai Produk -->
-                    <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: var(--radius-md); padding: 12px 14px; margin-top: 12px;">
-                        <div style="font-size: 11.5px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-                            Ringkasan Dampak Finansial Restock
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #374151; margin-bottom: 4px;">
-                            <span>Saldo Kas Toko Saat Ini:</span>
-                            <strong style="color: #166534;">Rp <?php echo number_format($store_cash, 0, ',', '.'); ?></strong>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #b91c1c; margin-bottom: 4px;">
-                            <span>Total Biaya Restock (Potong Kas):</span>
-                            <strong id="restock_summary_total_cost">- Rp 0</strong>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #1e40af; margin-bottom: 4px;">
-                            <span>Pertambahan Nilai Seluruh Produk:</span>
-                            <strong id="restock_summary_asset_increase">+ Rp 0</strong>
-                        </div>
-                        <div style="border-top: 1px dashed #86efac; margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 13.5px;">
-                            <span style="font-weight: 700; color: #14532d;">Sisa Saldo Kas Toko:</span>
-                            <strong id="restock_summary_remaining_balance" style="color: #15803d; font-family: 'Outfit', sans-serif;">Rp <?php echo number_format($store_cash, 0, ',', '.'); ?></strong>
-                        </div>
-                        <div id="restock_warning_insufficient" style="display: none; margin-top: 8px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; padding: 7px 10px; border-radius: var(--radius-sm); font-size: 11.5px; font-weight: 700;">
-                            ⚠️ Saldo kas toko tidak mencukupi untuk biaya restock ini! Kurangi unit atau sesuaikan harga modal.
-                        </div>
-                    </div>
-
-                    <!-- Catatan / Keterangan -->
-                    <div class="form-field-group" style="margin-top: 12px;">
-                        <label for="restock_notes">Catatan Restock / Keterangan (Opsional)</label>
-                        <input type="text" name="notes" id="restock_notes" placeholder="Contoh: Tambah stok untuk musim pendakian liburan">
-                    </div>
-                </div>
-
-                <div class="modal-footer-bar">
-                    <button type="button" class="btn-modal-cancel-btn" onclick="closeModalRestock()">Batal</button>
-                    <button type="submit" name="restock_produk" id="btn_submit_restock" class="btn-modal-confirm-btn">
-                        Simpan Tambah Stok
-                    </button>
                 </div>
             </form>
         </div>
@@ -2607,140 +2479,6 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
             document.body.style.overflow = 'auto';
         }
 
-        let activeRestockProduct = null;
-
-        function calculateRestockCostSummary() {
-            if (!activeRestockProduct) return;
-
-            const target = document.querySelector('input[name="restock_target"]:checked')?.value || 'rental';
-            const rentQty = parseInt(document.getElementById('restock_qty_rental')?.value) || 0;
-            const saleQty = parseInt(document.getElementById('restock_qty_sale')?.value) || 0;
-
-            let totalQty = 0;
-            if (target === 'rental') totalQty = rentQty;
-            else if (target === 'sale') totalQty = saleQty;
-            else if (target === 'both') totalQty = rentQty + saleQty;
-
-            const costPerUnit = parseFloat(document.getElementById('restock_cost_per_unit')?.value) || 0;
-            const totalDeduction = totalQty * costPerUnit;
-            const remaining = CURRENT_STORE_CASH - totalDeduction;
-
-            // Pertambahan nilai produk di inventaris
-            const rentTariff = parseFloat(activeRestockProduct.price) || 0;
-            const saleTariff = parseFloat(activeRestockProduct.price_sale) || 0;
-            let assetIncrease = 0;
-            if (target === 'rental') assetIncrease = rentQty * rentTariff;
-            else if (target === 'sale') assetIncrease = saleQty * saleTariff;
-            else if (target === 'both') assetIncrease = (rentQty * rentTariff) + (saleQty * saleTariff);
-
-            const costEl = document.getElementById('restock_summary_total_cost');
-            const assetEl = document.getElementById('restock_summary_asset_increase');
-            const remEl = document.getElementById('restock_summary_remaining_balance');
-            const warnEl = document.getElementById('restock_warning_insufficient');
-            const btnSubmit = document.getElementById('btn_submit_restock');
-
-            if (costEl) costEl.textContent = '- Rp ' + totalDeduction.toLocaleString('id-ID');
-            if (assetEl) assetEl.textContent = '+ Rp ' + assetIncrease.toLocaleString('id-ID');
-            if (remEl) {
-                remEl.textContent = 'Rp ' + remaining.toLocaleString('id-ID');
-                remEl.style.color = (remaining < 0) ? '#dc2626' : '#15803d';
-            }
-
-            if (totalDeduction > CURRENT_STORE_CASH) {
-                if (warnEl) warnEl.style.display = 'block';
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.style.opacity = '0.5';
-                    btnSubmit.style.cursor = 'not-allowed';
-                }
-            } else {
-                if (warnEl) warnEl.style.display = 'none';
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.style.opacity = '1';
-                    btnSubmit.style.cursor = 'pointer';
-                }
-            }
-        }
-
-        // Modal Restock
-        function openModalRestock(product) {
-            activeRestockProduct = product;
-            document.getElementById('restock_product_id').value = product.id;
-            document.getElementById('restock_product_name').textContent = product.name;
-            document.getElementById('restock_current_rental').textContent = product.stock || 0;
-            document.getElementById('restock_current_sale').textContent = product.stock_sale || 0;
-
-            const defaultCost = parseFloat(product.cost_price) || (parseFloat(product.price_sale) ? Math.round(parseFloat(product.price_sale) * 0.6) : (parseFloat(product.price) ? Math.round(parseFloat(product.price) * 3) : 50000));
-            const costInput = document.getElementById('restock_cost_per_unit');
-            if (costInput) costInput.value = defaultCost;
-
-            const ptype = product.product_type || 'rental';
-
-            if (ptype === 'rental') {
-                document.getElementById('rt_rental').checked = true;
-                handleRestockTargetChange('rental');
-            } else if (ptype === 'sale') {
-                document.getElementById('rt_sale').checked = true;
-                handleRestockTargetChange('sale');
-            } else {
-                document.getElementById('rt_rental').checked = true;
-                handleRestockTargetChange('rental');
-            }
-
-            const imgEl = document.getElementById('restock_thumb_img');
-            if (product.image && product.image.trim() !== '') {
-                imgEl.src = '../uploads/products/' + product.image;
-            } else {
-                imgEl.src = 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=80&auto=format&fit=crop&q=60';
-            }
-
-            calculateRestockCostSummary();
-            document.getElementById('modalRestockOverlay').classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModalRestock() {
-            document.getElementById('modalRestockOverlay').classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-
-        function handleRestockTargetChange(target) {
-            ['rental', 'sale', 'both'].forEach(t => {
-                const card = document.getElementById('card_restock_target_' + t);
-                if (card) {
-                    if (t === target) card.classList.add('selected');
-                    else card.classList.remove('selected');
-                }
-            });
-
-            const groupRent = document.getElementById('group_qty_rental');
-            const groupSale = document.getElementById('group_qty_sale');
-
-            if (target === 'rental') {
-                groupRent.style.display = 'block';
-                groupSale.style.display = 'none';
-                document.getElementById('restock_qty_sale').value = 0;
-                if (parseInt(document.getElementById('restock_qty_rental').value) <= 0) {
-                    document.getElementById('restock_qty_rental').value = 5;
-                }
-            } else if (target === 'sale') {
-                groupRent.style.display = 'none';
-                groupSale.style.display = 'block';
-                document.getElementById('restock_qty_rental').value = 0;
-                if (parseInt(document.getElementById('restock_qty_sale').value) <= 0) {
-                    document.getElementById('restock_qty_sale').value = 5;
-                }
-            } else if (target === 'both') {
-                groupRent.style.display = 'block';
-                groupSale.style.display = 'block';
-                if (parseInt(document.getElementById('restock_qty_rental').value) <= 0) document.getElementById('restock_qty_rental').value = 3;
-                if (parseInt(document.getElementById('restock_qty_sale').value) <= 0) document.getElementById('restock_qty_sale').value = 3;
-            }
-
-            calculateRestockCostSummary();
-        }
-
         // Global Paste Listener (Ctrl+V) untuk modal Tambah & Edit
         window.addEventListener('paste', function(e) {
             const clipboardData = e.clipboardData || window.clipboardData || (e.originalEvent && e.originalEvent.clipboardData);
@@ -2801,17 +2539,14 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
         window.addEventListener('click', function(event) {
             const addModal = document.getElementById('modalTambahOverlay');
             const editModal = document.getElementById('modalEditOverlay');
-            const restockModal = document.getElementById('modalRestockOverlay');
             if (event.target === addModal) closeModalTambah();
             if (event.target === editModal) closeModalEdit();
-            if (event.target === restockModal) closeModalRestock();
         });
 
         window.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModalTambah();
                 closeModalEdit();
-                closeModalRestock();
                 const sidebar = document.getElementById('adminSidebar');
                 const backdrop = document.getElementById('adminSidebarBackdrop');
                 if (sidebar && sidebar.classList.contains('mobile-open')) {
