@@ -1356,11 +1356,11 @@ $category_slug_map = [
                     <!-- Quick Filter Chips -->
                     <div class="hero-quick-chips">
                         <span class="hero-chips-label">Paling Dicari:</span>
-                        <a href="dashboard.php?kategori=Tenda+%26+Shelter" class="hero-chip-link">⛺ Tenda & Shelter</a>
-                        <a href="dashboard.php?kategori=Carrier+%26+Tas" class="hero-chip-link">🎒 Carrier & Tas</a>
-                        <a href="dashboard.php?kategori=Sleeping+Gear" class="hero-chip-link">🛏️ Sleeping Gear</a>
-                        <a href="dashboard.php?kategori=Cooking+Set" class="hero-chip-link">🍳 Cooking Set</a>
-                        <a href="dashboard.php?kategori=Penerangan+%26+Elektronik" class="hero-chip-link">🔦 Headlamp</a>
+                        <a href="dashboard.php?kategori=Tenda+%26+Shelter" class="hero-chip-link">Tenda & Shelter</a>
+                        <a href="dashboard.php?kategori=Carrier+%26+Tas" class="hero-chip-link">Carrier & Tas</a>
+                        <a href="dashboard.php?kategori=Sleeping+Gear" class="hero-chip-link">Sleeping Gear</a>
+                        <a href="dashboard.php?kategori=Cooking+Set" class="hero-chip-link">Cooking Set</a>
+                        <a href="dashboard.php?kategori=Penerangan+%26+Elektronik" class="hero-chip-link">Headlamp & Penerangan</a>
                     </div>
                 </div>
             </div>

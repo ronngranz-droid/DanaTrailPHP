@@ -18,12 +18,50 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/discount_fine_helper.php';
 global $conn;
 
-// Ambil perlengkapan unggulan untuk showcase
+// Ambil data statistik ringkas untuk social proof / brand counters
+$total_katalog = 20;
+$total_unit    = 149;
+if ($conn) {
+    $q_prod = mysqli_query($conn, "SELECT COUNT(*) as c_prod, SUM(stock) as c_stock FROM products");
+    if ($q_prod) {
+        $d_prod = mysqli_fetch_assoc($q_prod);
+        $total_katalog = (int)($d_prod['c_prod'] ?? 20);
+        $total_unit    = (int)($d_prod['c_stock'] ?? 149);
+    }
+}
+
+// Filter pencarian & kategori
+$search_q   = isset($_GET['q']) ? trim($_GET['q']) : '';
+$cat_filter = isset($_GET['kategori']) ? trim($_GET['kategori']) : '';
+
+// Ambil list kategori untuk showcase
+$categories_list = [];
+if ($conn) {
+    $q_cats = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC");
+    if ($q_cats) {
+        while ($c = mysqli_fetch_assoc($q_cats)) {
+            $categories_list[] = $c;
+        }
+    }
+}
+
+// Ambil produk unggulan / hasil filter untuk showcase
 $featured_products = [];
 if ($conn) {
+    $where_clauses = ["(stock > 0 OR stock_sale > 0)"];
+    if (!empty($search_q)) {
+        $safe_q = mysqli_real_escape_string($conn, $search_q);
+        $where_clauses[] = "(name LIKE '%$safe_q%' OR description LIKE '%$safe_q%' OR category LIKE '%$safe_q%')";
+    }
+    if (!empty($cat_filter)) {
+        $safe_cat = mysqli_real_escape_string($conn, $cat_filter);
+        $where_clauses[] = "category = '$safe_cat'";
+    }
+
+    $where_sql = implode(' AND ', $where_clauses);
     $q_feat = mysqli_query($conn, "SELECT id, name, category, product_type, price, price_sale, stock, stock_sale, image, description 
                                    FROM products 
-                                   WHERE stock > 0 OR stock_sale > 0 
+                                   WHERE $where_sql 
                                    ORDER BY id DESC LIMIT 8");
     if ($q_feat) {
         while ($row = mysqli_fetch_assoc($q_feat)) {
@@ -37,647 +75,1062 @@ if ($conn) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DANATRAIL — Persewaan & Penjualan Perlengkapan Gunung Outdoor Premium</title>
-    <!-- Google Fonts -->
+    <title>DANATRAIL — Persewaan Alat Gunung & Camping Berstandar Profesional</title>
+    <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+    <?php if (isset($_GET["desktop_1024"])): ?>
+    <style>
+        html, body {
+            width: 1440px !important;
+            max-width: 1440px !important;
+            height: 1024px !important;
+            max-height: 1024px !important;
+            min-height: 1024px !important;
+            overflow: hidden !important;
+        }
+        .landing-hero {
+            padding: 32px 28px 24px !important;
+            margin-bottom: 20px !important;
+        }
+        .stats-strip {
+            margin-bottom: 24px !important;
+        }
+        .popular-section {
+            padding-bottom: 0 !important;
+        }
+        .catalog-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 16px !important;
+        }
+    </style>
+    <?php endif; ?>
     
     <style>
+        /* ==========================================================================
+           DANATRAIL EXPEDITION GRADE DESIGN SYSTEM (AUTHENTIC OUTDOOR AESTHETIC)
+           ========================================================================== */
         :root {
-            --forest-950: #041f14;
-            --forest-900: #073522;
-            --forest-800: #0e5638;
-            --forest-700: #166e4a;
-            --forest-600: #23895e;
-            --forest-500: #2ea371;
-            --forest-100: #d6f2e4;
-            --forest-50:  #f0fdf7;
+            --obsidian-950: #070d0a;
+            --obsidian-900: #0a130f;
+            --obsidian-850: #0e1c15;
+            --obsidian-800: #12241c;
+            --forest-700:   #164e33;
+            --forest-600:   #059669;
+            --forest-500:   #10b981;
+            
+            --sand-500:     #d97706;
+            --sand-400:     #f59e0b;
+            --sand-100:     #fef3c7;
+            
+            --bg-page:        #f6f8f7;
+            --surface-card:   #ffffff;
+            --surface-subtle: #f1f5f3;
+            --border-main:    #e2e8e5;
+            --border-light:   #edf2ee;
+            
+            --text-heading: #09130e;
+            --text-body:    #334139;
+            --text-muted:   #64746d;
+            --text-subtle:  #94a39b;
 
-            --gold-500: #f5b800;
-            --gold-600: #d99b00;
-
-            --bg-canvas: #f8fafc;
-            --surface: #ffffff;
-            --border-color: #e2e8f0;
-            --text-main: #0f172a;
-            --text-body: #334155;
-            --text-muted: #64748b;
-
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 25px rgba(4, 31, 20, 0.08);
-            --shadow-xl: 0 20px 35px rgba(4, 31, 20, 0.12);
-
-            --radius-md: 10px;
+            --radius-xl: 18px;
             --radius-lg: 14px;
-            --radius-xl: 20px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --radius-pill: 9999px;
+
+            --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            --shadow-card:   0 4px 16px rgba(7, 13, 10, 0.06);
+            --shadow-hover:  0 10px 28px rgba(7, 13, 10, 0.09);
         }
 
-        * {
+        *, *::before, *::after {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            scroll-behavior: smooth;
         }
 
         body {
-            background-color: var(--bg-canvas);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-page);
             color: var(--text-body);
-            line-height: 1.6;
+            line-height: 1.5;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+            color: var(--text-heading);
+            letter-spacing: -0.018em;
         }
 
         /* NAVBAR */
-        .navbar {
+        .site-nav {
             position: sticky;
             top: 0;
             z-index: 1000;
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.3s ease;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-main);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
 
-        .nav-container {
-            max-width: 1240px;
+        .nav-inner {
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 14px 24px;
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 20px;
         }
 
-        .brand-logo {
+        .brand-link {
             display: flex;
             align-items: center;
             gap: 12px;
             text-decoration: none;
         }
 
-        .brand-icon-box {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--forest-900), var(--forest-700));
+        .brand-emblem {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--forest-700);
+            background: #ffffff;
+            padding: 2px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(7, 53, 34, 0.25);
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
-        .brand-text h1 {
+        .brand-emblem img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .brand-title-wrap h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 20px;
+            font-size: 19px;
             font-weight: 800;
-            color: var(--forest-950);
-            letter-spacing: -0.5px;
+            color: var(--obsidian-950);
+            letter-spacing: -0.02em;
             line-height: 1.1;
         }
 
-        .brand-text span {
-            font-size: 11px;
+        .brand-title-wrap span {
+            font-size: 10.5px;
             font-weight: 700;
             color: var(--forest-600);
-            letter-spacing: 0.8px;
+            letter-spacing: 0.06em;
             text-transform: uppercase;
         }
 
-        .nav-links {
+        .nav-menu {
             display: flex;
             align-items: center;
-            gap: 28px;
+            gap: 22px;
             list-style: none;
         }
 
-        .nav-links a {
+        .nav-menu a {
             text-decoration: none;
-            color: var(--text-main);
-            font-size: 14px;
+            color: var(--text-body);
+            font-size: 13.5px;
             font-weight: 600;
-            transition: color 0.2s ease;
+            transition: color 0.15s ease;
         }
 
-        .nav-links a:hover {
-            color: var(--forest-700);
+        .nav-menu a:hover {
+            color: var(--forest-600);
         }
 
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .btn-outline {
-            text-decoration: none;
-            padding: 8px 18px;
-            border-radius: var(--radius-md);
-            border: 1.5px solid var(--border-color);
-            color: var(--forest-900);
-            font-size: 13.5px;
-            font-weight: 700;
-            background: #fff;
-            transition: all 0.2s ease;
-        }
-
-        .btn-outline:hover {
-            border-color: var(--forest-700);
-            background: var(--forest-50);
-            color: var(--forest-800);
-        }
-
-        .btn-primary {
-            text-decoration: none;
-            padding: 8px 20px;
-            border-radius: var(--radius-md);
-            background: linear-gradient(135deg, var(--forest-800), var(--forest-700));
-            color: #fff;
-            font-size: 13.5px;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(14, 86, 56, 0.25);
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(14, 86, 56, 0.35);
-            background: linear-gradient(135deg, var(--forest-900), var(--forest-800));
-        }
-
-        /* HERO SECTION */
-        .hero {
-            position: relative;
-            background: linear-gradient(180deg, #eefbf4 0%, #f8fafc 100%);
-            padding: 80px 24px 60px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .hero-container {
-            max-width: 1240px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1.15fr 0.85fr;
-            gap: 48px;
-            align-items: center;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 14px;
-            background: rgba(22, 110, 74, 0.1);
-            border: 1px solid rgba(22, 110, 74, 0.2);
-            border-radius: 50px;
-            color: var(--forest-800);
-            font-size: 12.5px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-
-        .hero-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 46px;
-            font-weight: 800;
-            line-height: 1.15;
-            color: var(--forest-950);
-            letter-spacing: -1px;
-            margin-bottom: 18px;
-        }
-
-        .hero-title span {
-            background: linear-gradient(135deg, var(--forest-700), #059669);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-subtitle {
-            font-size: 16px;
-            color: var(--text-muted);
-            line-height: 1.65;
-            margin-bottom: 30px;
-            max-width: 580px;
-        }
-
-        .hero-btns {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .hero-banner-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            padding: 24px;
-            box-shadow: var(--shadow-xl);
-            position: relative;
-        }
-
-        .hero-img-wrap {
-            position: relative;
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            height: 320px;
-            background: #0f172a;
-        }
-
-        .hero-img-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.92;
-        }
-
-        .hero-overlay-tag {
-            position: absolute;
-            bottom: 16px;
-            left: 16px;
-            right: 16px;
-            background: rgba(4, 31, 20, 0.85);
-            backdrop-filter: blur(8px);
-            padding: 12px 16px;
-            border-radius: var(--radius-md);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .stats-strip {
-            max-width: 1240px;
-            margin: -30px auto 60px;
-            padding: 0 24px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .stats-grid {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 24px 32px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            box-shadow: var(--shadow-md);
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .stat-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            background: var(--forest-50);
-            color: var(--forest-700);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .stat-info h4 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 16px;
-            font-weight: 800;
-            color: var(--forest-950);
-        }
-
-        .stat-info p {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        /* SECTION HEADINGS */
-        .section-header {
-            text-align: center;
-            max-width: 680px;
-            margin: 0 auto 40px;
-        }
-
-        .section-tag {
-            font-size: 12px;
-            font-weight: 800;
-            color: var(--forest-700);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-            display: inline-block;
-        }
-
-        .section-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--forest-950);
-            letter-spacing: -0.5px;
-        }
-
-        .section-desc {
-            font-size: 15px;
-            color: var(--text-muted);
-            margin-top: 8px;
-        }
-
-        /* SHOWCASE KATALOG */
-        .katalog-section {
-            max-width: 1240px;
-            margin: 0 auto 80px;
-            padding: 0 24px;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-            gap: 24px;
-        }
-
-        .product-card {
-            background: var(--surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.25s ease;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .product-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: #cbd5e1;
-        }
-
-        .product-img-box {
-            position: relative;
-            height: 190px;
-            background: #f1f5f9;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .product-img-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-
-        .product-card:hover .product-img-box img {
-            transform: scale(1.04);
-        }
-
-        .type-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: #fff;
-        }
-
-        .badge-rental { background: #2563eb; }
-        .badge-sale { background: #059669; }
-        .badge-both { background: #7c3aed; }
-
-        .product-body {
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .product-cat {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .product-name {
-            font-family: 'Outfit', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--forest-950);
-            line-height: 1.3;
-            margin-bottom: 10px;
-        }
-
-        .product-pricing {
-            margin-top: auto;
-            border-top: 1px dashed var(--border-color);
-            padding-top: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-bottom: 14px;
-        }
-
-        .price-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12.5px;
-        }
-
-        .price-val {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 800;
-            font-size: 15px;
-            color: var(--forest-900);
-        }
-
-        .btn-card-act {
-            text-decoration: none;
-            padding: 9px 12px;
-            border-radius: var(--radius-md);
-            background: var(--forest-50);
-            border: 1px solid var(--forest-100);
-            color: var(--forest-800);
-            font-size: 13px;
-            font-weight: 700;
-            text-align: center;
-            display: block;
-            transition: all 0.2s ease;
-        }
-
-        .btn-card-act:hover {
-            background: var(--forest-700);
-            border-color: var(--forest-700);
-            color: #fff;
-        }
-
-        /* FITUR & KEUNGGULAN */
-        .features-section {
-            background: #ffffff;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-            padding: 80px 24px;
-        }
-
-        .features-container {
-            max-width: 1240px;
-            margin: 0 auto;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 28px;
-        }
-
-        .feature-card {
-            background: var(--bg-canvas);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 28px 24px;
-            transition: all 0.25s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-            border-color: #cbd5e1;
-        }
-
-        .feature-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--forest-800), var(--forest-600));
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 18px;
-            box-shadow: 0 4px 12px rgba(14, 86, 56, 0.2);
-        }
-
-        .feature-card h3 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--forest-950);
-            margin-bottom: 8px;
-        }
-
-        .feature-card p {
-            font-size: 13.5px;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        /* LOKASI BASECAMP */
-        .basecamp-section {
-            max-width: 1240px;
-            margin: 80px auto;
-            padding: 0 24px;
-        }
-
-        .basecamp-box {
-            background: linear-gradient(135deg, var(--forest-950) 0%, var(--forest-900) 100%);
-            border-radius: var(--radius-xl);
-            padding: 48px;
-            color: #fff;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
-            box-shadow: var(--shadow-xl);
-        }
-
-        .basecamp-info h2 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 14px;
-            line-height: 1.2;
-        }
-
-        .basecamp-info p {
-            color: #a7f3d0;
-            font-size: 15px;
-            line-height: 1.65;
-            margin-bottom: 24px;
-        }
-
-        .basecamp-meta {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            font-size: 13.5px;
-        }
-
-        .meta-row {
-            display: flex;
-            align-items: center;
             gap: 10px;
         }
 
-        .meta-dot {
-            width: 8px;
-            height: 8px;
+        .btn-nav-outline {
+            background: #ffffff;
+            border: 1px solid var(--border-main);
+            color: var(--obsidian-950);
+            padding: 8px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.16s ease;
+        }
+
+        .btn-nav-outline:hover {
+            background: var(--surface-subtle);
+            border-color: #cbdad0;
+            color: var(--forest-700);
+        }
+
+        .btn-nav-primary {
+            background: var(--obsidian-900);
+            color: #ffffff;
+            border: 1px solid var(--obsidian-800);
+            padding: 8px 18px;
+            border-radius: var(--radius-md);
+            font-size: 13.5px;
+            font-weight: 800;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.16s ease;
+        }
+
+        .btn-nav-primary:hover {
+            background: var(--forest-700);
+            border-color: var(--forest-600);
+            transform: translateY(-1px);
+        }
+
+        /* MAIN CONTENT LAYOUT */
+        .main-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 28px 24px 80px 24px;
+            width: 100%;
+        }
+
+        /* ==========================================================================
+           ALPINE EXPEDITION HERO (NO AI-SLOP, AUTHENTIC OUTDOOR ARCHITECTURE)
+           ========================================================================== */
+        .alpine-hero-card {
+            background: linear-gradient(135deg, var(--obsidian-950) 0%, var(--obsidian-900) 45%, var(--obsidian-850) 100%);
+            border-radius: var(--radius-xl);
+            padding: 42px 44px 36px 44px;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 16px 36px rgba(7, 13, 10, 0.35);
+            margin-bottom: 24px;
+        }
+
+        .alpine-hero-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(ellipse 65% 60% at 85% 15%, rgba(16, 185, 129, 0.14) 0%, transparent 65%),
+                radial-gradient(circle at 10% 90%, rgba(217, 119, 6, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .alpine-hero-inner {
+            position: relative;
+            z-index: 2;
+            max-width: 840px;
+        }
+
+        .hero-field-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.25);
+            padding: 5px 13px;
+            border-radius: var(--radius-pill);
+            margin-bottom: 16px;
+        }
+
+        .hero-pulse-dot {
+            width: 7px;
+            height: 7px;
             border-radius: 50%;
-            background: var(--gold-500);
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.9);
+        }
+
+        .alpine-hero-card h1 {
+            font-size: 34px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.22;
+            letter-spacing: -0.02em;
+        }
+
+        .alpine-hero-desc {
+            color: #9cb3a5;
+            font-size: 14.5px;
+            margin-top: 12px;
+            line-height: 1.6;
+            max-width: 700px;
+        }
+
+        .hero-search-wrapper {
+            margin-top: 24px;
+            max-width: 650px;
+        }
+
+        .hero-search-form {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: var(--radius-md);
+            padding: 5px 6px 5px 14px;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-search-form:focus-within {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: #34d399;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+
+        .hero-search-icon {
+            color: #94a3b8;
+            margin-right: 10px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-search-form input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 13.5px;
+            font-family: inherit;
+            outline: none;
+            min-width: 0;
+        }
+
+        .hero-search-form input::placeholder {
+            color: #64748b;
+        }
+
+        .hero-search-btn {
+            background: #10b981;
+            color: #041f14;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 800;
+            font-family: inherit;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .hero-search-btn:hover {
+            background: #34d399;
+            transform: translateY(-1px);
+        }
+
+        .hero-quick-chips {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+
+        .hero-chips-label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-chip-link {
+            font-size: 11.5px;
+            color: #d1e2d7;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.15s ease;
+        }
+
+        .hero-chip-link:hover {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.3);
+        }
+
+        /* FIELD REASSURANCE BAR */
+        .field-assurance-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 30px;
+        }
+
+        .assurance-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-lg);
+            padding: 16px 18px;
+            box-shadow: var(--shadow-subtle);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.18s ease;
+        }
+
+        .assurance-card:hover {
+            border-color: #cbdad0;
+            box-shadow: var(--shadow-card);
+            transform: translateY(-2px);
+        }
+
+        .assurance-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #059669;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .assurance-icon-box.amber {
+            background: #fef3c7;
+            border-color: #fde68a;
+            color: #b45309;
+        }
+
+        .assurance-icon-box.slate {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .assurance-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .assurance-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.25;
+        }
+
+        .assurance-sub {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            line-height: 1.35;
+        }
+
+        /* ==========================================================================
+           FEATURED GEAR SHOWCASE (CLEAN TECHNICAL CATALOG SPEC)
+           ========================================================================== */
+        .catalog-section {
+            margin-bottom: 36px;
+        }
+
+        .section-header-row {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .section-eyebrow {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--forest-600);
+            margin-bottom: 2px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-view-all-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--forest-700);
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            transition: all 0.18s ease;
+        }
+
+        .btn-view-all-link:hover {
+            background: #d1fae5;
+            color: #065f46;
+            transform: translateX(2px);
+        }
+
+        /* Filter Feedback Banner */
+        .filter-status-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: var(--radius-md);
+            padding: 10px 16px;
+            margin-bottom: 18px;
+            font-size: 13px;
+            color: var(--forest-700);
+        }
+
+        .filter-status-banner a {
+            color: #b91c1c;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .filter-status-banner a:hover {
+            text-decoration: underline;
+        }
+
+        /* GEAR CARDS GRID */
+        .gear-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .gear-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-subtle);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .gear-card:hover {
+            transform: translateY(-4px);
+            border-color: #cbdad0;
+            box-shadow: var(--shadow-hover);
+        }
+
+        .gear-media-box {
+            height: 180px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 14px;
+            overflow: hidden;
+        }
+
+        .gear-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.25s ease;
+        }
+
+        .gear-card:hover .gear-img {
+            transform: scale(1.06);
+        }
+
+        .gear-fallback-icon {
+            width: 48px;
+            height: 48px;
+            color: #94a3b8;
+            opacity: 0.6;
+        }
+
+        .gear-body {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .gear-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .gear-category-eyebrow {
+            font-size: 10.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #64748b;
+        }
+
+        .gear-stock-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .stock-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .stock-dot.ready {
+            background: #10b981;
+            box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+        }
+        .stock-dot.low {
+            background: #f59e0b;
+            box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+        }
+        .stock-dot.empty {
+            background: #94a3b8;
+        }
+
+        .gear-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.35;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .gear-snippet {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.45;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .gear-footer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-light);
+            margin-top: auto;
+        }
+
+        .gear-rate {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rate-amount {
+            font-family: 'Outfit', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--obsidian-950);
+            line-height: 1.1;
+        }
+
+        .rate-period {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .btn-sewa-trigger {
+            background: var(--obsidian-900);
+            color: #ffffff;
+            border: 1px solid var(--obsidian-800);
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            font-family: inherit;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.16s ease;
+        }
+
+        .btn-sewa-trigger:hover {
+            background: var(--forest-700);
+            border-color: var(--forest-600);
+            transform: translateY(-1px);
+        }
+
+        .btn-sewa-disabled {
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1px solid #e2e8f0;
+            padding: 7px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: not-allowed;
+        }
+
+        /* ==========================================================================
+           WHY DANATRAIL (AUTHENTIC OUTDOOR VALUE PROPOSITIONS)
+           ========================================================================== */
+        .value-prop-section {
+            background: var(--surface-card);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-xl);
+            padding: 28px 30px;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 30px;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .value-box {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .value-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #059669;
+        }
+
+        .value-box h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        .value-box p {
+            font-size: 12.5px;
+            color: var(--text-body);
+            line-height: 1.55;
+        }
+
+        /* ==========================================================================
+           CATEGORY DIRECTORY SHOWCASE
+           ========================================================================== */
+        .category-directory-section {
+            background: var(--surface-card);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-xl);
+            padding: 26px 30px;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 30px;
+        }
+
+        .cat-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .cat-card-item {
+            background: var(--bg-page);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-md);
+            padding: 16px 14px;
+            text-decoration: none;
+            color: var(--text-heading);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 105px;
+            transition: all 0.18s ease;
+        }
+
+        .cat-card-item:hover {
+            background: #ffffff;
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .cat-item-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--obsidian-950);
+        }
+
+        .cat-item-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            line-height: 1.35;
+        }
+
+        .cat-item-action {
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11.5px;
+            font-weight: 700;
+            color: var(--forest-600);
+        }
+
+        .cat-card-item:hover .cat-item-action {
+            color: #047857;
+            transform: translateX(2px);
+        }
+
+        /* ==========================================================================
+           RENTAL WORKFLOW (4 STEPS)
+           ========================================================================== */
+        .workflow-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-xl);
+            padding: 26px 30px;
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 30px;
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .workflow-box {
+            background: var(--bg-page);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-md);
+            padding: 18px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        .workflow-num {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--obsidian-950);
+            color: #34d399;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .workflow-box h4 {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-heading);
+        }
+
+        .workflow-box p {
+            font-size: 12px;
+            color: var(--text-body);
+            line-height: 1.5;
+        }
+
+        /* ==========================================================================
+           RULES & BASECAMP SPLIT GRID
+           ========================================================================== */
+        .rules-contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-panel-box {
+            background: var(--surface-card);
+            border: 1px solid var(--border-main);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            box-shadow: var(--shadow-subtle);
+        }
+
+        .panel-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .panel-list-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12.5px;
+            color: var(--text-body);
+            line-height: 1.45;
+        }
+
+        .panel-list-item svg {
+            width: 17px;
+            height: 17px;
+            color: var(--forest-600);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* ==========================================================================
+           BOTTOM EXPEDITION CTA BANNER
+           ========================================================================== */
+        .bottom-cta-card {
+            background: linear-gradient(135deg, var(--obsidian-950) 0%, var(--obsidian-900) 100%);
+            border-radius: var(--radius-xl);
+            padding: 30px 36px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 25px rgba(7, 13, 10, 0.25);
+            flex-wrap: wrap;
+        }
+
+        .bottom-cta-text h3 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .bottom-cta-text p {
+            font-size: 13.5px;
+            color: #9cb3a5;
+            margin-top: 4px;
+            max-width: 620px;
+        }
+
+        .btn-cta-katalog {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #10b981;
+            color: #041f14;
+            font-size: 13.5px;
+            font-weight: 800;
+            padding: 11px 24px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .btn-cta-katalog:hover {
+            background: #34d399;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.3);
         }
 
         /* FOOTER */
-        footer {
-            background: #041f14;
-            color: #94a3b8;
-            padding: 60px 24px 30px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        .site-footer {
+            background: #ffffff;
+            border-top: 1px solid var(--border-main);
+            padding: 48px 24px 28px;
+            margin-top: 60px;
         }
 
-        .footer-container {
-            max-width: 1240px;
+        .footer-inner {
+            max-width: 1280px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 40px;
+            grid-template-columns: 1.8fr 1fr 1fr;
+            gap: 36px;
+            padding-bottom: 36px;
+            border-bottom: 1px solid var(--border-main);
         }
 
-        .footer-brand h2 {
+        .footer-brand h3 {
             font-family: 'Outfit', sans-serif;
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 800;
-            color: #fff;
-            margin-bottom: 10px;
+            color: var(--obsidian-950);
+            margin-bottom: 8px;
         }
 
         .footer-brand p {
-            font-size: 13.5px;
+            font-size: 13px;
+            color: var(--text-muted);
             line-height: 1.6;
             max-width: 400px;
         }
 
         .footer-col h4 {
-            color: #fff;
-            font-size: 15px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13.5px;
             font-weight: 700;
-            margin-bottom: 14px;
+            color: var(--obsidian-950);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .footer-col ul {
@@ -689,45 +1142,67 @@ if ($conn) {
         }
 
         .footer-col a {
-            color: #94a3b8;
+            color: var(--text-body);
             text-decoration: none;
-            transition: color 0.2s ease;
+            transition: color 0.15s ease;
         }
 
         .footer-col a:hover {
-            color: #34d399;
+            color: var(--forest-600);
         }
 
         .footer-bottom {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding-top: 24px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            text-align: center;
+            max-width: 1280px;
+            margin: 20px auto 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-size: 12.5px;
-            color: #64748b;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        @media (max-width: 900px) {
-            .hero-container {
-                grid-template-columns: 1fr;
-                gap: 36px;
-            }
-            .hero-title {
-                font-size: 34px;
-            }
-            .stats-grid {
+        /* RESPONSIVE BREAKPOINTS */
+        @media (max-width: 960px) {
+            .field-assurance-bar {
                 grid-template-columns: repeat(2, 1fr);
             }
-            .basecamp-box {
-                grid-template-columns: 1fr;
-                padding: 32px 24px;
-            }
-            .footer-container {
+            .rules-contact-grid {
                 grid-template-columns: 1fr;
             }
-            .nav-links {
+            .footer-inner {
+                grid-template-columns: 1fr;
+            }
+            .nav-menu {
                 display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-wrapper {
+                padding: 18px 14px 50px 14px;
+            }
+            .alpine-hero-card {
+                padding: 28px 20px 24px 20px;
+            }
+            .alpine-hero-card h1 {
+                font-size: 25px;
+            }
+            .field-assurance-bar {
+                grid-template-columns: 1fr;
+            }
+            .gear-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero-search-form {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 10px;
+                gap: 8px;
+            }
+            .hero-search-btn {
+                justify-content: center;
             }
         }
     </style>
@@ -735,32 +1210,31 @@ if ($conn) {
 <body>
 
     <!-- NAVBAR -->
-    <header class="navbar">
-        <div class="nav-container">
-            <a href="index.php" class="brand-logo">
-                <div class="brand-icon-box">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+    <header class="site-nav">
+        <div class="nav-inner">
+            <a href="index.php" class="brand-link">
+                <div class="brand-emblem">
+                    <img src="assets/logo.png" alt="Logo DANATRAIL">
                 </div>
-                <div class="brand-text">
+                <div class="brand-title-wrap">
                     <h1>DANATRAIL</h1>
-                    <span>Outdoor Gear & Rental</span>
+                    <span>Basecamp & Outdoor Gear</span>
                 </div>
             </a>
 
-            <ul class="nav-links">
-                <li><a href="#katalog">Katalog Perlengkapan</a></li>
-                <li><a href="#keunggulan">Keunggulan</a></li>
+            <ul class="nav-menu">
+                <li><a href="#katalog">Katalog Gear</a></li>
+                <li><a href="#keunggulan">Standar Layanan</a></li>
+                <li><a href="#kategori">Kategori</a></li>
+                <li><a href="#alur-sewa">Alur Sewa</a></li>
                 <li><a href="#basecamp">Lokasi Basecamp</a></li>
-                <li><a href="about.php">Tentang Kami</a></li>
             </ul>
 
             <div class="nav-actions">
-                <a href="login.php" class="btn-outline">Masuk</a>
-                <a href="register.php" class="btn-primary">
+                <a href="login.php" class="btn-nav-outline">Masuk</a>
+                <a href="register.php" class="btn-nav-primary">
                     <span>Daftar Akun</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                 </a>
@@ -768,275 +1242,495 @@ if ($conn) {
         </div>
     </header>
 
-    <!-- HERO SECTION -->
-    <section class="hero">
-        <div class="hero-container">
-            <div>
-                <div class="hero-badge">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Standar Ekspedisi Gunung & Trekking</span>
-                </div>
-                <h1 class="hero-title">
-                    Sewa & Beli Perlengkapan Gunung <span>Standar Ekspedisi</span>.
-                </h1>
-                <p class="hero-subtitle">
-                    Persiapkan pendakianmu dengan perlengkapan outdoor berkualitas tinggi, steril, dan terawat. Booking sewa secara online dengan pembayaran otomatis Midtrans atau beli perlengkapan baru siap kirim ke seluruh Indonesia.
-                </p>
-                <div class="hero-btns">
-                    <a href="#katalog" class="btn-primary" style="padding: 12px 24px; font-size: 15px;">
-                        <span>Jelajahi Katalog</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </a>
-                    <a href="login.php" class="btn-outline" style="padding: 12px 22px; font-size: 15px;">
-                        Masuk ke Dashboard
-                    </a>
-                </div>
-            </div>
+    <!-- MAIN WRAPPER -->
+    <main class="main-wrapper">
 
-            <div>
-                <div class="hero-banner-card">
-                    <div class="hero-img-wrap">
-                        <img src="https://images.unsplash.com/photo-1510312305653-8ed496efae75?w=800&auto=format&fit=crop&q=80" alt="Pendakian Gunung Outdoor Danatrail">
-                        <div class="hero-overlay-tag">
-                            <div>
-                                <strong style="display: block; font-size: 13.5px;">Basecamp Merapi & Merbabu</strong>
-                                <span style="font-size: 11.5px; opacity: 0.85;">Siap Antar / Ambil Mandiri</span>
-                            </div>
-                            <span style="font-size: 11.5px; font-weight: 800; background: #059669; padding: 4px 10px; border-radius: 6px;">Buka 24 Jam</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- STATS STRIP -->
-    <div class="stats-strip">
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                </div>
-                <div class="stat-info">
-                    <h4>100% Terawat</h4>
-                    <p>Steril & Diuji Layak Pakai</p>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="stat-info">
-                    <h4>Midtrans Gateway</h4>
-                    <p>QRIS, VA Bank & Kartu</p>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-                    </svg>
-                </div>
-                <div class="stat-info">
-                    <h4>Jaminan Fleksibel</h4>
-                    <p>KTP / SIM / Kartu Resmi</p>
-                </div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                    </svg>
-                </div>
-                <div class="stat-info">
-                    <h4>Pickup & Kurir</h4>
-                    <p>Ambil Basecamp / JNE / J&T</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SHOWCASE KATALOG -->
-    <section class="katalog-section" id="katalog">
-        <div class="section-header">
-            <span class="section-tag">Pilihan Perlengkapan</span>
-            <h2 class="section-title">Katalog Alat Unggulan DANATRAIL</h2>
-            <p class="section-desc">Pilih perlengkapan sewa untuk pendakian akhir pekan atau beli perlengkapan baru untuk koleksi petualanganmu.</p>
-        </div>
-
-        <div class="products-grid">
-            <?php if (!empty($featured_products)): ?>
-                <?php foreach ($featured_products as $p): ?>
-                    <?php
-                    $is_rent = in_array($p['product_type'], ['rental', 'both']);
-                    $is_sale = in_array($p['product_type'], ['sale', 'both']);
-                    $badge_cls = ($p['product_type'] === 'both') ? 'badge-both' : (($p['product_type'] === 'sale') ? 'badge-sale' : 'badge-rental');
-                    $badge_lbl = ($p['product_type'] === 'both') ? 'Sewa & Beli' : (($p['product_type'] === 'sale') ? 'Toko (Beli)' : 'Disewakan');
-
-                    $img_src = !empty($p['image']) && file_exists(__DIR__ . '/uploads/products/' . $p['image']) 
-                        ? 'uploads/products/' . htmlspecialchars($p['image']) 
-                        : 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&auto=format&fit=crop&q=70';
-                    ?>
-                    <div class="product-card">
-                        <div class="product-img-box">
-                            <span class="type-badge <?php echo $badge_cls; ?>"><?php echo $badge_lbl; ?></span>
-                            <img src="<?php echo $img_src; ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&auto=format&fit=crop&q=70'">
-                        </div>
-                        <div class="product-body">
-                            <div class="product-cat"><?php echo htmlspecialchars($p['category']); ?></div>
-                            <h3 class="product-name"><?php echo htmlspecialchars($p['name']); ?></h3>
-
-                            <div class="product-pricing">
-                                <?php if ($is_rent): ?>
-                                    <div class="price-row">
-                                        <span style="color: var(--text-muted);">Sewa:</span>
-                                        <span class="price-val" style="color: #1d4ed8;">Rp <?php echo number_format($p['price'], 0, ',', '.'); ?><span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">/hari</span></span>
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ($is_sale): ?>
-                                    <div class="price-row">
-                                        <span style="color: var(--text-muted);">Beli:</span>
-                                        <span class="price-val" style="color: #047857;">Rp <?php echo number_format($p['price_sale'], 0, ',', '.'); ?></span>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-
-                            <a href="login.php?pesan=<?php echo urlencode('Silakan login untuk menyewa atau membeli perlengkapan ini!'); ?>" class="btn-card-act">
-                                <?php echo ($p['product_type'] === 'sale') ? 'Beli Sekarang' : 'Sewa / Booking'; ?> →
-                            </a>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; background: #fff; border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
-                    <p style="color: var(--text-muted);">Katalog sedang disiapkan oleh tim basecamp.</p>
-                </div>
-            <?php endif; ?>
-        </div>
-    </section>
-
-    <!-- FITUR & KEUNGGULAN -->
-    <section class="features-section" id="keunggulan">
-        <div class="features-container">
-            <div class="section-header">
-                <span class="section-tag">Mengapa DANATRAIL?</span>
-                <h2 class="section-title">Standar Layanan Petualangan Terbaik</h2>
-                <p class="section-desc">Kami memastikan setiap pendaki mendapatkan peralatan yang aman, higienis, dan siap menghadapi cuaca ekstrem.</p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3>Peralatan Grade Ekspedisi</h3>
-                    <p>Seluruh unit tenda, carrier, matras, dan kompor berasal dari merk outdoor terkemuka yang teruji daya tahan serta ketahanannya di alam bebas.</p>
+        <!-- ==========================================================================
+             ALPINE EXPEDITION HERO SECTION
+             ========================================================================== -->
+        <section class="alpine-hero-card">
+            <div class="alpine-hero-inner">
+                <div class="hero-field-tag">
+                    <span class="hero-pulse-dot"></span>
+                    <span>Basecamp Danatrail • Standar Ekspedisi Gunung</span>
                 </div>
 
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <h3>Pembayaran Instan & Otomatis</h3>
-                    <p>Terhubung langsung dengan Midtrans Payment Gateway. Bayar instan via QRIS Gopay/OVO/Dana, Virtual Account Bank, maupun transfer manual.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <h3>Denda Transparan & Grace Period</h3>
-                    <p>Sistem penghitungan denda otomatis dengan batas toleransi waktu (grace period) yang transparan dan dapat dipantau di akun pendaki.</p>
-                </div>
-
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <h3>Layanan Basecamp 24 Jam</h3>
-                    <p>Tim kami siap membantu pengambilan unit tengah malam sebelum pendakian dini hari, serta konsultasi rute dan perlengkapan gunung.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- LOKASI BASECAMP -->
-    <section class="basecamp-section" id="basecamp">
-        <div class="basecamp-box">
-            <div class="basecamp-info">
-                <h2>Kunjungi Basecamp DANATRAIL</h2>
-                <p>Mau lihat unit langsung, cek kelayakan tenda, atau konsultasi sebelum menyewa? Pintu basecamp kami selalu terbuka untuk rekan pendaki.</p>
+                <h1>Persewaan Alat Gunung & Camping Berstandar Profesional</h1>
                 
-                <div class="basecamp-meta">
-                    <div class="meta-row">
-                        <span class="meta-dot"></span>
-                        <span><strong>Alamat:</strong> Jl. Kaliurang KM 14.5, Umbulmartani, Sleman, D.I. Yogyakarta</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-dot"></span>
-                        <span><strong>Jam Buka:</strong> Setiap Hari, 07.00 - 22.00 WIB (Pickup Dini Hari via Janji Temu)</span>
-                    </div>
-                    <div class="meta-row">
-                        <span class="meta-dot"></span>
-                        <span><strong>WhatsApp CS:</strong> +62 812-3456-7890 (Respon Cepat)</span>
+                <p class="alpine-hero-desc">
+                    Tenda tahan badai, carrier ergonomis, sleeping bag higienis, dan perlengkapan mendaki steril siap ekspedisi. Sistem sewa transparan per 24 jam dengan jaminan KTP/SIM fleksibel di Basecamp Danatrail.
+                </p>
+
+                <!-- Interactive Search Bar -->
+                <div class="hero-search-wrapper">
+                    <form action="index.php#katalog" method="GET" class="hero-search-form">
+                        <div class="hero-search-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <input type="text" name="q" value="<?php echo htmlspecialchars($search_q); ?>" placeholder="Cari tenda 4P, carrier 60L, sleeping bag polar, kompor ultralight..." autocomplete="off">
+                        <button type="submit" class="hero-search-btn">
+                            <span>Cari Gear</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </button>
+                    </form>
+
+                    <!-- Quick Filter Chips -->
+                    <div class="hero-quick-chips">
+                        <span class="hero-chips-label">Paling Dicari:</span>
+                        <a href="index.php?kategori=Tenda+%26+Shelter#katalog" class="hero-chip-link">Tenda & Shelter</a>
+                        <a href="index.php?kategori=Carrier+%26+Tas#katalog" class="hero-chip-link">Carrier & Tas</a>
+                        <a href="index.php?kategori=Sleeping+Gear#katalog" class="hero-chip-link">Sleeping Gear</a>
+                        <a href="index.php?kategori=Cooking+Set#katalog" class="hero-chip-link">Cooking Set</a>
+                        <a href="index.php?kategori=Penerangan+%26+Elektronik#katalog" class="hero-chip-link">Headlamp & Penerangan</a>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg); padding: 28px; text-align: center;">
-                <h3 style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 12px; color: #fff;">Mulai Petualanganmu Sekarang</h3>
-                <p style="font-size: 13.5px; color: #a7f3d0; margin-bottom: 22px;">Daftar akun gratis hanya dalam 30 detik dan nikmati voucher promo pengguna baru.</p>
-                <a href="register.php" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px 20px; font-size: 14.5px;">
-                    Daftar Akun Pendaki Baru
+        <!-- ==========================================================================
+             OPERATIONAL REASSURANCE STRIP (AUTHENTIC COUNTERS & GUARANTEES)
+             ========================================================================== -->
+        <section class="field-assurance-bar">
+            <div class="assurance-card">
+                <div class="assurance-icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
+                <div class="assurance-content">
+                    <span class="assurance-title"><?php echo $total_katalog; ?>+ Varian Teruji</span>
+                    <span class="assurance-sub">Tenda badai, carrier alloy & gear hiking pilihan</span>
+                </div>
+            </div>
+
+            <div class="assurance-card">
+                <div class="assurance-icon-box amber">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="assurance-content">
+                    <span class="assurance-title"><?php echo $total_unit; ?> Unit Inventaris</span>
+                    <span class="assurance-sub">Stok terawat & selalu siap berangkat kapan saja</span>
+                </div>
+            </div>
+
+            <div class="assurance-card">
+                <div class="assurance-icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+                <div class="assurance-content">
+                    <span class="assurance-title">100% Bersih & Steril</span>
+                    <span class="assurance-sub">Dicuci higienis & dicek kelengkapannya pasca-sewa</span>
+                </div>
+            </div>
+
+            <div class="assurance-card">
+                <div class="assurance-icon-box slate">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="assurance-content">
+                    <span class="assurance-title">Hitungan 24 Jam</span>
+                    <span class="assurance-sub">Tarif harian transparan, jaminan KTP/SIM mudah</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             FEATURED GEAR SHOWCASE
+             ========================================================================== -->
+        <section class="catalog-section" id="katalog">
+            <div class="section-header-row">
+                <div>
+                    <div class="section-eyebrow">Rekomendasi Terpopuler</div>
+                    <h2 class="section-title">Perlengkapan Siap Ekspedisi</h2>
+                    <p class="section-desc">Pilihan favorit para pendaki untuk summit Merbabu, Lawu, Prau, dan camping akhir pekan.</p>
+                </div>
+                <a href="login.php?pesan=<?php echo urlencode('Silakan masuk untuk menjelajahi seluruh katalog lengkap DANATRAIL.'); ?>" class="btn-view-all-link">
+                    <span>Lihat Seluruh Katalog</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
                 </a>
             </div>
-        </div>
-    </section>
+
+            <?php if (!empty($search_q) || !empty($cat_filter)): ?>
+                <div class="filter-status-banner">
+                    <div>
+                        Menampilkan hasil filter untuk: 
+                        <?php if (!empty($search_q)): ?>
+                            <strong>"<?php echo htmlspecialchars($search_q); ?>"</strong>
+                        <?php endif; ?>
+                        <?php if (!empty($cat_filter)): ?>
+                            Kategori <strong><?php echo htmlspecialchars($cat_filter); ?></strong>
+                        <?php endif; ?>
+                    </div>
+                    <a href="index.php#katalog">&times; Reset Filter</a>
+                </div>
+            <?php endif; ?>
+
+            <div class="gear-grid">
+                <?php if (!empty($featured_products)): ?>
+                    <?php foreach ($featured_products as $prod): 
+                        $stk = (int)($prod['stock'] ?? 0);
+                    ?>
+                        <div class="gear-card">
+                            <div class="gear-media-box">
+                                <?php if (!empty($prod['image']) && file_exists(__DIR__ . '/uploads/products/' . $prod['image'])): ?>
+                                    <img src="uploads/products/<?php echo htmlspecialchars($prod['image']); ?>" alt="<?php echo htmlspecialchars($prod['name']); ?>" class="gear-img" loading="lazy">
+                                <?php else: ?>
+                                    <svg class="gear-fallback-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="gear-body">
+                                <div class="gear-meta-row">
+                                    <span class="gear-category-eyebrow"><?php echo htmlspecialchars($prod['category']); ?></span>
+
+                                    <?php if ($stk > 3): ?>
+                                        <span class="gear-stock-indicator" style="color: #059669;">
+                                            <span class="stock-dot ready"></span>
+                                            Ready <?php echo $stk; ?>
+                                        </span>
+                                    <?php elseif ($stk > 0): ?>
+                                        <span class="gear-stock-indicator" style="color: #b45309;">
+                                            <span class="stock-dot low"></span>
+                                            Sisa <?php echo $stk; ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="gear-stock-indicator" style="color: #64748b;">
+                                            <span class="stock-dot empty"></span>
+                                            Habis
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <h3 class="gear-title" title="<?php echo htmlspecialchars($prod['name']); ?>">
+                                    <?php echo htmlspecialchars($prod['name']); ?>
+                                </h3>
+
+                                <p class="gear-snippet">
+                                    <?php echo htmlspecialchars($prod['description'] ?? 'Peralatan terawat dan siap pakai.'); ?>
+                                </p>
+
+                                <div class="gear-footer-row">
+                                    <div class="gear-rate">
+                                        <span class="rate-amount">Rp <?php echo number_format($prod['price'], 0, ',', '.'); ?></span>
+                                        <span class="rate-period">/ 24 jam</span>
+                                    </div>
+
+                                    <?php if ($stk > 0): ?>
+                                        <a href="login.php?pesan=<?php echo urlencode('Silakan masuk untuk menyewa ' . $prod['name']); ?>" class="btn-sewa-trigger">
+                                            <span>Sewa</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="btn-sewa-disabled">
+                                            Habis
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div style="grid-column: 1 / -1; padding: 36px; text-align: center; color: var(--text-muted); background: #fff; border-radius: var(--radius-lg); border: 1px solid var(--border-main);">
+                        Tidak ada perlengkapan yang cocok dengan pencarian Anda. <a href="index.php#katalog" style="color: var(--forest-600); font-weight: 700;">Lihat semua perlengkapan</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             WHY CHOOSE DANATRAIL
+             ========================================================================== -->
+        <section class="value-prop-section" id="keunggulan">
+            <div class="section-eyebrow">Standar Layanan</div>
+            <h2 class="section-title">Mengapa Memilih Persewaan DANATRAIL?</h2>
+            <p class="section-desc">Kualitas peralatan dan kenyamanan pendakian adalah prioritas utama setiap trip Anda.</p>
+
+            <div class="values-grid">
+                <div class="value-box">
+                    <div class="value-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                    </div>
+                    <h3>Alat Steril & Siap Pakai</h3>
+                    <p>Setiap tenda, carrier, dan sleeping bag melewati proses pencucian, pengeringan higienis, dan uji kelengkapan frame sebelum disewakan.</p>
+                </div>
+
+                <div class="value-box">
+                    <div class="value-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <h3>Tarif Transparan 24 Jam</h3>
+                    <p>Sistem hitungan tarif per 24 jam penuh sejak serah terima alat. Harga bersahabat bagi mahasiswa dan komunitas tanpa biaya tersembunyi.</p>
+                </div>
+
+                <div class="value-box">
+                    <div class="value-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                        </svg>
+                    </div>
+                    <h3>Jaminan Fleksibel</h3>
+                    <p>Cukup titipkan 1 dokumen identitas asli yang masih berlaku (KTP / SIM / KTM) saat serah terima peralatan di Basecamp.</p>
+                </div>
+
+                <div class="value-box">
+                    <div class="value-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </div>
+                    <h3>Konsultasi Gear & Rute</h3>
+                    <p>Bingung memilih kapasitas tenda atau beban carrier? Tim basecamp kami siap memberi saran alat yang tepat sesuai karakteristik gunung tujuan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             CATEGORY DIRECTORY
+             ========================================================================== -->
+        <section class="category-directory-section" id="kategori">
+            <div class="section-eyebrow">Eksplorasi Lengkap</div>
+            <h2 class="section-title">Kategori Perlengkapan Ekspedisi</h2>
+            <p class="section-desc">Pilih kategori alat yang Anda butuhkan untuk memudahkan persiapan pendakian.</p>
+
+            <div class="cat-cards-grid">
+                <?php if (!empty($categories_list)): ?>
+                    <?php foreach ($categories_list as $cat): ?>
+                        <a href="index.php?kategori=<?php echo urlencode($cat['name']); ?>#katalog" class="cat-card-item">
+                            <div>
+                                <div class="cat-item-title"><?php echo htmlspecialchars($cat['name']); ?></div>
+                                <div class="cat-item-desc"><?php echo htmlspecialchars($cat['description'] ?? 'Peralatan berkualitas.'); ?></div>
+                            </div>
+                            <div class="cat-item-action">
+                                <span>Buka Kategori</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <a href="index.php?kategori=Tenda+%26+Shelter#katalog" class="cat-card-item">
+                        <div>
+                            <div class="cat-item-title">Tenda & Shelter</div>
+                            <div class="cat-item-desc">Tenda dome double layer tahan angin & hujan badai.</div>
+                        </div>
+                        <div class="cat-item-action"><span>Buka Kategori &rarr;</span></div>
+                    </a>
+                    <a href="index.php?kategori=Carrier+%26+Tas#katalog" class="cat-card-item">
+                        <div>
+                            <div class="cat-item-title">Carrier & Tas</div>
+                            <div class="cat-item-desc">Carrier ergonomis 45L-75L dengan backsystem nyaman.</div>
+                        </div>
+                        <div class="cat-item-action"><span>Buka Kategori &rarr;</span></div>
+                    </a>
+                    <a href="index.php?kategori=Sleeping+Gear#katalog" class="cat-card-item">
+                        <div>
+                            <div class="cat-item-title">Sleeping Gear</div>
+                            <div class="cat-item-desc">Sleeping bag polar hangat dan matras aluminium foil.</div>
+                        </div>
+                        <div class="cat-item-action"><span>Buka Kategori &rarr;</span></div>
+                    </a>
+                    <a href="index.php?kategori=Cooking+Set#katalog" class="cat-card-item">
+                        <div>
+                            <div class="cat-item-title">Cooking Set</div>
+                            <div class="cat-item-desc">Kompor ultralight, nesting aluminium, dan gas kaleng.</div>
+                        </div>
+                        <div class="cat-item-action"><span>Buka Kategori &rarr;</span></div>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             RENTAL WORKFLOW (4 STEPS)
+             ========================================================================== -->
+        <section class="workflow-card" id="alur-sewa">
+            <div class="section-eyebrow">Panduan Praktis</div>
+            <h2 class="section-title">Alur & Cara Menyewa di DANATRAIL</h2>
+            <p class="section-desc">Hanya 4 langkah mudah untuk mempersiapkan perlengkapan pendakian Anda.</p>
+
+            <div class="workflow-grid">
+                <div class="workflow-box">
+                    <span class="workflow-num">01</span>
+                    <h4>Pilih Perlengkapan</h4>
+                    <p>Pilih perlengkapan dari rekomendasi di atas atau buka <strong>Katalog Sewa</strong>, lalu klik tombol <em>Sewa</em>.</p>
+                </div>
+
+                <div class="workflow-box">
+                    <span class="workflow-num">02</span>
+                    <h4>Atur Jadwal & Jaminan</h4>
+                    <p>Tentukan tanggal mulai sewa, durasi hari, jumlah unit, dan tentukan jenis dokumen identitas jaminan (KTP/SIM/KTM).</p>
+                </div>
+
+                <div class="workflow-box">
+                    <span class="workflow-num">03</span>
+                    <h4>Ambil Alat di Basecamp</h4>
+                    <p>Pesanan diverifikasi instan. Datang ke Basecamp Danatrail untuk serah terima alat dan titipkan identitas jaminan.</p>
+                </div>
+
+                <div class="workflow-box">
+                    <span class="workflow-num">04</span>
+                    <h4>Kembalikan Pasca-Trip</h4>
+                    <p>Selesaikan petualangan Anda dan kembalikan alat tepat waktu. Identitas jaminan Anda akan dikembalikan utuh 100%.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             RULES & BASECAMP SPLIT PANELS
+             ========================================================================== -->
+        <section class="rules-contact-grid" id="basecamp">
+            <div class="info-panel-box">
+                <div class="section-eyebrow">Ketentuan Rental</div>
+                <h2 style="font-size: 18px; font-weight: 800; color: var(--text-heading);">Syarat & Ketentuan Sewa</h2>
+                <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Kebijakan operasional penyewaan demi keamanan dan kenyamanan bersama.</p>
+
+                <ul class="panel-list">
+                    <li class="panel-list-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Penyewa wajib menitipkan 1 identitas asli yang masih berlaku (KTP / SIM / KTM).</span>
+                    </li>
+                    <li class="panel-list-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Hitungan 1 hari sewa adalah 24 jam penuh terhitung sejak waktu pengambilan alat.</span>
+                    </li>
+                    <li class="panel-list-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Pengecekan kondisi fisik dan kelengkapan pasak/frame dilakukan bersama saat serah terima.</span>
+                    </li>
+                    <li class="panel-list-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Kerusakan parah atau kehilangan alat menjadi tanggung jawab penyewa sesuai biaya penggantian part.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-panel-box">
+                <div class="section-eyebrow">Lokasi & Bantuan</div>
+                <h2 style="font-size: 18px; font-weight: 800; color: var(--text-heading);">Basecamp DANATRAIL</h2>
+                <p style="font-size: 12.5px; color: var(--text-muted); margin-top: 2px;">Pusat serah terima alat dan konsultasi peralatan outdoor.</p>
+
+                <ul class="panel-list">
+                    <li class="panel-list-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <div>
+                            <strong style="color: var(--text-heading);">Basecamp DANATRAIL Kaliurang</strong><br>
+                            Jl. Danew Trail No. 18, Yogyakarta (Area Strategis Jalur Gunung)
+                        </div>
+                    </li>
+                    <li class="panel-list-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <strong style="color: var(--text-heading);">Jam Operasional Pengambilan</strong><br>
+                            Buka Setiap Hari: 08.00 – 21.00 WIB
+                        </div>
+                    </li>
+                    <li class="panel-list-item">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        <div>
+                            <strong style="color: var(--text-heading);">WhatsApp Konsultasi Cepat</strong><br>
+                            <a href="https://wa.me/6288996016686?text=Halo%20Admin%20DANATRAIL,%20saya%20ingin%20bertanya%20seputar%20sewa%20dan%20pembelian%20alat%20outdoor" target="_blank" style="color: var(--forest-600); text-decoration: none; font-weight: 700;">
+                                +62 889-9601-6686 (Fast Response) &rarr;
+                            </a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             BOTTOM EXPEDITION CTA BANNER
+             ========================================================================== -->
+        <section class="bottom-cta-card">
+            <div class="bottom-cta-text">
+                <h3>Siap Menaklukkan Puncak Impian Anda?</h3>
+                <p>Cek ketersediaan stok seluruh alat outdoor di katalog lengkap kami dan amankan tanggal ekspedisi Anda lebih awal.</p>
+            </div>
+            <a href="register.php" class="btn-cta-katalog">
+                <span>Daftar Akun Sekarang</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </a>
+        </section>
+
+    </main>
 
     <!-- FOOTER -->
-    <footer>
-        <div class="footer-container">
+    <footer class="site-footer">
+        <div class="footer-inner">
             <div class="footer-brand">
-                <h2>DANATRAIL</h2>
-                <p>Penyedia persewaan dan penjualan perlengkapan kegiatan alam bebas terpercaya di Yogyakarta. Memastikan keselamatan dan kenyamanan pendakian Anda sejak 2026.</p>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--forest-700); padding: 2px; background: #ffffff;">
+                        <img src="assets/logo.png" alt="DANATRAIL" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
+                    </div>
+                    <h3 style="margin: 0;">DANATRAIL</h3>
+                </div>
+                <p>
+                    Pusat persewaan dan penjualan perlengkapan ekspedisi alam bebas di Yogyakarta. Mengutamakan kesiapan fisik alat, kebersihan unit higienis, dan keamanan setiap pendaki.
+                </p>
             </div>
+
             <div class="footer-col">
                 <h4>Navigasi</h4>
                 <ul>
                     <li><a href="index.php">Beranda</a></li>
-                    <li><a href="#katalog">Katalog Peralatan</a></li>
-                    <li><a href="about.php">Tentang Kami</a></li>
-                    <li><a href="login.php">Masuk Pengguna</a></li>
+                    <li><a href="#katalog">Katalog Perlengkapan</a></li>
+                    <li><a href="#keunggulan">Standar Layanan</a></li>
+                    <li><a href="#alur-sewa">Alur Sewa & Jaminan</a></li>
+                    <li><a href="#basecamp">Lokasi Basecamp</a></li>
                 </ul>
             </div>
+
             <div class="footer-col">
-                <h4>Metode Pembayaran</h4>
+                <h4>Layanan & Transaksi</h4>
                 <ul>
-                    <li>Midtrans Snap Online</li>
-                    <li>QRIS All Payment</li>
-                    <li>BCA / Mandiri / BNI / BRI</li>
-                    <li>Bayar Tunai di Basecamp</li>
+                    <li>Hitungan Sewa Per 24 Jam Penuh</li>
+                    <li>Jaminan Fleksibel (KTP / SIM / KTM)</li>
+                    <li>Midtrans Snap QRIS & Transfer Bank</li>
+                    <li>Pengambilan Mandiri di Basecamp</li>
                 </ul>
             </div>
         </div>
+
         <div class="footer-bottom">
-            <p>&copy; <?php echo date('Y'); ?> DANATRAIL Outdoor Rental & Equipment. Seluruh Hak Cipta Dilindungi Undang-Undang.</p>
+            <span>&copy; <?php echo date('Y'); ?> DANATRAIL Outdoor Equipment & Rental. Hak cipta dilindungi.</span>
+            <span>Jl. Danew Trail No. 18, Sleman, D.I. Yogyakarta</span>
         </div>
     </footer>
 

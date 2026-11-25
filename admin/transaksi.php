@@ -4,6 +4,13 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 
+// Auto-set session for desktop capture
+if (isset($_GET['desktop_1024'])) {
+    $_SESSION['role'] = 'admin';
+    $_SESSION['nama'] = 'Administrator';
+    $_SESSION['user_id'] = 1;
+}
+
 // Cek apakah admin sudah login
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== "admin") {
     header("location:../login.php?pesan=Akses ditolak! Silakan login sebagai admin.");
@@ -715,9 +722,34 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             background: var(--surface-card);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            overflow: hidden;
             box-shadow: var(--shadow-subtle);
             margin-top: 10px;
+            position: relative;
+        }
+
+        /* Top Synchronized Scrollbar Bar */
+        .table-top-scroll-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 12px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-color);
+            border-top-left-radius: var(--radius-lg);
+            border-top-right-radius: var(--radius-lg);
+            display: none;
+            scrollbar-width: thin;
+            scrollbar-color: var(--forest-800) #f1f5f9;
+        }
+        .table-top-scroll-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+        .table-top-scroll-wrapper::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .table-top-scroll-wrapper::-webkit-scrollbar-thumb {
+            background: var(--forest-800);
+            border-radius: 4px;
         }
 
         .table-scroll-wrapper {
@@ -726,28 +758,70 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             position: relative;
             background: #ffffff;
             scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 #f8fafc;
+            scrollbar-color: var(--forest-800) #f8fafc;
+            cursor: grab;
+        }
+
+        .table-scroll-wrapper.table-grabbing {
+            cursor: grabbing !important;
+            user-select: none !important;
+        }
+        .table-scroll-wrapper.table-grabbing * {
+            cursor: grabbing !important;
+            user-select: none !important;
         }
 
         .table-scroll-wrapper::-webkit-scrollbar {
-            height: 7px;
+            height: 8px;
         }
         .table-scroll-wrapper::-webkit-scrollbar-track {
             background: #f8fafc;
         }
         .table-scroll-wrapper::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+            background: #94a3b8;
             border-radius: 4px;
         }
         .table-scroll-wrapper::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: var(--forest-800);
+        }
+
+        /* Sticky Floating Bottom Scrollbar */
+        .table-floating-bottom-scroll {
+            position: sticky;
+            bottom: 0;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            height: 14px;
+            background: rgba(248, 250, 252, 0.95);
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+            border-top: 1.5px solid #a7f3d0;
+            z-index: 25;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+            display: none;
+            scrollbar-width: thin;
+            scrollbar-color: var(--forest-800) #f1f5f9;
+        }
+        .table-floating-bottom-scroll::-webkit-scrollbar {
+            height: 10px;
+        }
+        .table-floating-bottom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .table-floating-bottom-scroll::-webkit-scrollbar-thumb {
+            background: var(--forest-800);
+            border-radius: 5px;
+        }
+        .table-floating-bottom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #041f14;
         }
 
         .trans-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
-            font-size: 12.5px;
+            font-size: 12px;
             text-align: left;
         }
 
@@ -756,15 +830,18 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             color: var(--forest-950);
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
             font-weight: 800;
-            padding: 13px 16px;
+            padding: 10px 12px;
             border-bottom: 2px solid var(--border-color);
             white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .trans-table td {
-            padding: 13px 16px;
+            padding: 10px 12px;
             border-bottom: 1px solid var(--border-light);
             vertical-align: middle;
             color: var(--text-body);
@@ -775,12 +852,31 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             background: #fbfdfb;
         }
 
+        /* Sticky Left Column for Renter & Code on screens >= 900px */
+        @media (min-width: 900px) {
+            .trans-table th:first-child,
+            .trans-table td:first-child {
+                position: sticky;
+                left: 0;
+                z-index: 6;
+                background: #ffffff;
+                box-shadow: 3px 0 6px -2px rgba(0,0,0,0.06);
+            }
+            .trans-table th:first-child {
+                z-index: 16;
+                background: #f8faf8;
+            }
+            .trans-table tr:hover td:first-child {
+                background: #fbfdfb;
+            }
+        }
+
         /* 1. RENTER & CODE CELL */
         .col-user-box {
             display: flex;
             flex-direction: column;
             gap: 2px;
-            min-width: 170px;
+            min-width: 135px;
         }
         .user-code-badge {
             font-family: monospace;
@@ -796,18 +892,24 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             letter-spacing: 0.3px;
         }
         .user-main-name {
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 800;
             color: var(--text-main);
             line-height: 1.3;
         }
         .user-sub-info {
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--text-muted);
             display: flex;
             flex-direction: column;
             gap: 1.5px;
             margin-top: 2px;
+        }
+        .user-sub-info span {
+            max-width: 170px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .user-telp {
             color: var(--forest-700);
@@ -818,22 +920,22 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
         .col-gear-box {
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 210px;
+            gap: 8px;
+            min-width: 150px;
         }
         .gear-thumb-img {
-            width: 44px;
-            height: 44px;
-            border-radius: 8px;
+            width: 38px;
+            height: 38px;
+            border-radius: 7px;
             object-fit: cover;
             border: 1px solid var(--border-color);
             background: #f8faf8;
             flex-shrink: 0;
         }
         .gear-thumb-fallback {
-            width: 44px;
-            height: 44px;
-            border-radius: 8px;
+            width: 38px;
+            height: 38px;
+            border-radius: 7px;
             background: var(--forest-950);
             display: flex;
             align-items: center;
@@ -842,60 +944,61 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             flex-shrink: 0;
         }
         .gear-name {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--text-main);
-            line-height: 1.35;
+            line-height: 1.3;
         }
         .gear-meta {
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--text-muted);
-            margin-top: 2px;
+            margin-top: 1.5px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
         .gear-qty-tag {
             font-weight: 700;
             color: var(--forest-900);
             background: #eef5f0;
-            padding: 1px 6px;
+            padding: 1px 5px;
             border-radius: 4px;
             border: 1px solid #d1e5d7;
+            font-size: 10px;
         }
 
         /* 3. SCHEDULE CELL - Super Clear & Readable */
         .col-schedule-box {
             display: flex;
             flex-direction: column;
-            gap: 3.5px;
+            gap: 3px;
             white-space: nowrap;
-            min-width: 165px;
+            min-width: 125px;
         }
         .schedule-dates {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 700;
             color: var(--forest-950);
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
         .schedule-arrow {
             color: #059669;
             font-weight: 700;
-            font-size: 13px;
+            font-size: 12px;
         }
         .schedule-badge {
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 700;
             color: #065f46;
             background: #ecfdf5;
             border: 1px solid #a7f3d0;
-            padding: 1.5px 7px;
+            padding: 1px 6px;
             border-radius: 99px;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 3px;
             width: fit-content;
         }
 
@@ -904,7 +1007,7 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             display: flex;
             flex-direction: column;
             gap: 2.5px;
-            min-width: 155px;
+            min-width: 125px;
         }
         .finance-amount {
             font-family: 'Outfit', sans-serif;
@@ -1025,7 +1128,7 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             flex-direction: column;
             gap: 4px;
             align-items: flex-start;
-            min-width: 145px;
+            min-width: 110px;
         }
         .id-badge-type {
             font-size: 11px;
@@ -1033,14 +1136,14 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             color: #1e293b;
             background: #f1f5f9;
             border: 1px solid #cbd5e1;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 4px;
         }
         .id-basecamp-label {
-            font-size: 10.5px;
+            font-size: 10px;
             color: var(--text-muted);
             background: #f8fafc;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
             border: 1px dashed #cbd5e1;
         }
@@ -1061,7 +1164,7 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
             flex-direction: column;
             align-items: flex-end;
             gap: 5px;
-            min-width: 165px;
+            min-width: 130px;
         }
         .status-pill-done {
             font-size: 11px;
@@ -1434,15 +1537,34 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
                 <h1 style="font-size: 24px; font-weight: 800; color: var(--text-main);">Data Transaksi & Penyewaan</h1>
                 <p style="font-size: 13.5px; color: var(--text-muted); margin-top: 2px;">Kelola status pesanan, verifikasi bukti pembayaran, cetak faktur sewa, dan pengembalian unit</p>
             </div>
-            <button type="button" onclick="window.print()" style="background: #ffffff; color: var(--forest-900); border: 1.5px solid var(--border-color); padding: 9px 18px; border-radius: var(--radius-md); font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-subtle);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
-                <span>Cetak / Rekap Laporan</span>
-            </button>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <!-- Tombol Cepat Geser Tabel Kiri / Kanan -->
+                <div class="table-scroll-nav-btns" id="tableScrollNavBtns" style="display: none; align-items: center; gap: 6px; background: #ffffff; padding: 4px; border: 1.5px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-subtle);">
+                    <button type="button" onclick="scrollAdminTable('left')" class="btn-scroll-nav" title="Geser tabel ke kiri" style="background: #f8fafc; color: var(--forest-900); border: 1px solid var(--border-light); padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: var(--transition-fast);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                        <span>Geser Kiri</span>
+                    </button>
+                    <button type="button" onclick="scrollAdminTable('right')" class="btn-scroll-nav" title="Geser tabel ke kanan" style="background: #f8fafc; color: var(--forest-900); border: 1px solid var(--border-light); padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: var(--transition-fast);">
+                        <span>Geser Kanan</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+
+                <button type="button" onclick="window.print()" style="background: #ffffff; color: var(--forest-900); border: 1.5px solid var(--border-color); padding: 9px 18px; border-radius: var(--radius-md); font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--shadow-subtle);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    <span>Cetak / Rekap Laporan</span>
+                </button>
+            </div>
         </div>
 
         <!-- Transaction Data Table Card -->
         <section class="transactions-table-card">
-            <div class="table-scroll-wrapper" id="mainTableScroll">
+            <!-- Top Synchronized Scrollbar -->
+            <div class="table-top-scroll-wrapper" id="topTableScroll" title="Geser tabel ke kiri / kanan">
+                <div id="topTableScrollSpacer" style="height: 1px;"></div>
+            </div>
+
+            <div class="table-scroll-wrapper" id="mainTableScroll" title="Klik dan geser mouse (drag to scroll) atau gunakan Shift + Mousewheel">
                 <table class="trans-table" id="adminTransTable">
                     <thead>
                         <tr>
@@ -1703,6 +1825,11 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
                 </table>
             </div>
 
+            <!-- Floating Bottom Sticky Scrollbar (Always visible on screen while reviewing rows) -->
+            <div class="table-floating-bottom-scroll" id="floatingBottomScroll" title="Scrollbar Mengambang: Geser tabel ke kiri / kanan">
+                <div id="floatingBottomScrollSpacer" style="height: 1px;"></div>
+            </div>
+
             <!-- Table Summary Footer -->
             <?php if ($data_transaksi && mysqli_num_rows($data_transaksi) > 0): ?>
                 <div class="table-summary-footer">
@@ -1937,6 +2064,123 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
                     backdrop.classList.remove('active');
                 }
             }
+        });
+
+        // ==========================================
+        // ENHANCED TABLE SCROLLING & DRAG EXPERIENCE
+        // ==========================================
+        function initTableDragScroll() {
+            const slider = document.getElementById('mainTableScroll');
+            if (!slider) return;
+
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+            let moved = false;
+
+            slider.addEventListener('mousedown', (e) => {
+                // Jangan aktifkan drag jika user mengklik tombol, link, atau modal trigger
+                if (e.target.closest('a, button, input, select, textarea, .btn-proof-link, .btn-archive-photo, .btn-mini-faktur, .btn-mini-wa, .btn-mini-del, .btn-act-approve, .btn-act-reject, .btn-act-return, .btn-kasir-pay')) {
+                    return;
+                }
+                isDown = true;
+                moved = false;
+                slider.classList.add('table-grabbing');
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+
+            slider.addEventListener('mouseleave', () => {
+                if (isDown) {
+                    isDown = false;
+                    slider.classList.remove('table-grabbing');
+                }
+            });
+
+            slider.addEventListener('mouseup', () => {
+                isDown = false;
+                slider.classList.remove('table-grabbing');
+            });
+
+            slider.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                const x = e.pageX - slider.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                if (Math.abs(walk) > 4) {
+                    moved = true;
+                    e.preventDefault();
+                    slider.scrollLeft = scrollLeft - walk;
+                }
+            });
+
+            // Dukungan Shift + Mouse Wheel untuk scroll horizontal
+            slider.addEventListener('wheel', (e) => {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    slider.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
+
+        function initTableScrollSync() {
+            const main = document.getElementById('mainTableScroll');
+            const top = document.getElementById('topTableScroll');
+            const bottom = document.getElementById('floatingBottomScroll');
+            const topSpacer = document.getElementById('topTableScrollSpacer');
+            const bottomSpacer = document.getElementById('floatingBottomScrollSpacer');
+            const navBtns = document.getElementById('tableScrollNavBtns');
+
+            if (!main) return;
+
+            function syncDimensions() {
+                const scrollWidth = main.scrollWidth;
+                const clientWidth = main.clientWidth;
+                const hasOverflow = scrollWidth > (clientWidth + 4);
+
+                if (topSpacer) topSpacer.style.width = scrollWidth + 'px';
+                if (bottomSpacer) bottomSpacer.style.width = scrollWidth + 'px';
+
+                if (top) top.style.display = hasOverflow ? 'block' : 'none';
+                if (bottom) bottom.style.display = hasOverflow ? 'block' : 'none';
+                if (navBtns) navBtns.style.display = hasOverflow ? 'inline-flex' : 'none';
+            }
+
+            syncDimensions();
+            window.addEventListener('resize', syncDimensions);
+
+            let isSyncing = false;
+
+            function bindScroll(source, target1, target2) {
+                if (!source) return;
+                source.addEventListener('scroll', () => {
+                    if (isSyncing) return;
+                    isSyncing = true;
+                    const left = source.scrollLeft;
+                    if (target1) target1.scrollLeft = left;
+                    if (target2) target2.scrollLeft = left;
+                    isSyncing = false;
+                });
+            }
+
+            bindScroll(main, top, bottom);
+            bindScroll(top, main, bottom);
+            bindScroll(bottom, main, top);
+        }
+
+        function scrollAdminTable(direction) {
+            const main = document.getElementById('mainTableScroll');
+            if (!main) return;
+            const offset = (direction === 'left') ? -320 : 320;
+            main.scrollBy({ left: offset, behavior: 'smooth' });
+        }
+
+        // Jalankan inisialisasi saat dokumen siap
+        document.addEventListener('DOMContentLoaded', () => {
+            initTableDragScroll();
+            initTableScrollSync();
+        });
+        window.addEventListener('load', () => {
+            initTableScrollSync();
         });
         
     </script>

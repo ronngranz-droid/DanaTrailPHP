@@ -18,9 +18,7 @@ global $conn;
         <div class="sidebar-header">
             <a href="about.php" class="sidebar-brand-wrapper" style="text-decoration: none;">
                 <div class="sidebar-logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                    <img src="../assets/logo.png" alt="DANATRAIL">
                 </div>
                 <div class="sidebar-brand-text">
                     <span class="brand-title">DANATRAIL</span>
@@ -207,16 +205,25 @@ global $conn;
     }
 
     .sidebar-logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 9px;
-        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
-        color: #ffffff;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #ffffff;
+        padding: 2px;
+        border: 1.5px solid var(--gold-500, #f59e0b);
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .sidebar-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border-radius: 50%;
     }
 
     .sidebar-brand-text {
