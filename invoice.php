@@ -566,7 +566,7 @@ if ($is_store_order) {
                 <div class="brand-info">
                     <h1>DANATRAIL</h1>
                     <p>Platform Rental & Toko Perlengkapan Outdoor Gunung</p>
-                    <p>Jl. Raya Basecamp No. 07 • WhatsApp: +<?php echo $wa_admin_num; ?></p>
+                    <p>Jl. Danatrail • WhatsApp: +<?php echo $wa_admin_num; ?></p>
                 </div>
             </div>
             <div class="inv-meta">

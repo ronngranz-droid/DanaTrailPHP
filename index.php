@@ -1645,8 +1645,8 @@ if ($conn) {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <div>
-                            <strong style="color: var(--text-heading);">Basecamp DANATRAIL Kaliurang</strong><br>
-                            Jl. Danew Trail No. 18, Yogyakarta (Area Strategis Jalur Gunung)
+                            <strong style="color: var(--text-heading);">Basecamp DANATRAIL Sidoarjo</strong><br>
+                            Jl. Danatrail
                         </div>
                     </li>
                     <li class="panel-list-item">
@@ -1702,7 +1702,7 @@ if ($conn) {
                     <h3 style="margin: 0;">DANATRAIL</h3>
                 </div>
                 <p>
-                    Pusat persewaan dan penjualan perlengkapan ekspedisi alam bebas di Yogyakarta. Mengutamakan kesiapan fisik alat, kebersihan unit higienis, dan keamanan setiap pendaki.
+                    Pusat persewaan dan penjualan perlengkapan ekspedisi alam bebas di Sidoarjo. Mengutamakan kesiapan fisik alat, kebersihan unit higienis, dan keamanan setiap pendaki.
                 </p>
             </div>
 
@@ -1730,7 +1730,7 @@ if ($conn) {
 
         <div class="footer-bottom">
             <span>&copy; <?php echo date('Y'); ?> DANATRAIL Outdoor Equipment & Rental. Hak cipta dilindungi.</span>
-            <span>Jl. Danew Trail No. 18, Sleman, D.I. Yogyakarta</span>
+            <span>Jl. Danatrail, Sidoarjo</span>
         </div>
     </footer>
 

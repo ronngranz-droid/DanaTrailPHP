@@ -3,6 +3,13 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Auto-set session for desktop capture
+if (isset($_GET['desktop_1024'])) {
+    $_SESSION['role'] = 'user';
+    $_SESSION['nama'] = 'User Demo';
+    $_SESSION['user_id'] = 2;
+}
+
 // Cek autentikasi user
 if (!isset($_SESSION['role'])) {
     header("location:../login.php?pesan=" . urlencode("Silakan login terlebih dahulu!"));
@@ -1676,8 +1683,8 @@ $category_slug_map = [
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                         <div>
-                            <strong style="color: var(--text-heading);">Basecamp DANATRAIL Kaliurang</strong><br>
-                            Jl. Danew Trail No. 18, Yogyakarta (Area Strategis Jalur Gunung)
+                            <strong style="color: var(--text-heading);">Basecamp DANATRAIL Sidoarjo</strong><br>
+                            Jl. Danatrail
                         </div>
                     </li>
                     <li class="panel-list-item">

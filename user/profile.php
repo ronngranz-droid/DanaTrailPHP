@@ -563,7 +563,7 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
 
                         <div class="form-group">
                             <label for="address">Alamat Lengkap Domisili * <span style="color: #dc2626; font-size: 11px;">(Wajib untuk Pemesanan)</span></label>
-                            <textarea id="address" name="address" rows="3" class="form-control" placeholder="Alamat lengkap tempat tinggal / domisili saat ini (Contoh: Jl. Merpati No. 12, Sleman, Yogyakarta)" required style="<?php echo empty($user['address']) ? 'border-color: #f59e0b; background: #fffdf5;' : ''; ?>"><?php echo htmlspecialchars($user['address'] ?? ''); ?></textarea>
+                            <textarea id="address" name="address" rows="3" class="form-control" placeholder="Alamat lengkap tempat tinggal / domisili saat ini (Contoh: Jl. Danatrail, Sidoarjo)" required style="<?php echo empty($user['address']) ? 'border-color: #f59e0b; background: #fffdf5;' : ''; ?>"><?php echo htmlspecialchars($user['address'] ?? ''); ?></textarea>
                         </div>
 
                         <div class="form-group">

@@ -114,7 +114,7 @@ global $conn;
         <div class="sidebar-basecamp-card">
             <div class="basecamp-card-head">
                 <span class="basecamp-live-dot"></span>
-                <span>Basecamp Merapi</span>
+                <span>Basecamp DANATRAIL Sidoarjo</span>
             </div>
             <p class="basecamp-card-hours">Buka 08.00 – 21.00 WIB</p>
             <a href="https://wa.me/6288996016686?text=Halo%20Admin%20DANATRAIL,%20saya%20ingin%20bertanya%20seputar%20sewa%20alat" target="_blank" class="basecamp-wa-link">
