@@ -269,6 +269,31 @@ if (isset($_POST['upload_bukti_bayar'])) {
     }
 }
 
+// 2b. PROSES BATALKAN / HAPUS BUKTI TRANSFER UNTUK TETAP BAYAR DI KASIR
+if (isset($_POST['batal_bukti_bayar']) || isset($_GET['batal_bukti_bayar'])) {
+    $rental_id = (int)($_POST['rental_id'] ?? $_GET['batal_bukti_bayar'] ?? 0);
+
+    $cek = mysqli_query($conn, "SELECT id, payment_proof FROM rentals WHERE id='$rental_id' AND user_id='$user_id'");
+    if ($cek && mysqli_num_rows($cek) > 0) {
+        $rental_data = mysqli_fetch_assoc($cek);
+        $upload_dir = '../uploads/payments/';
+        if (!empty($rental_data['payment_proof']) && file_exists($upload_dir . $rental_data['payment_proof'])) {
+            @unlink($upload_dir . $rental_data['payment_proof']);
+        }
+        mysqli_query($conn, "UPDATE rentals SET 
+                    payment_proof = NULL, 
+                    payment_method = 'Bayar di Basecamp (Cash / Debit)', 
+                    payment_status = 'Belum Bayar' 
+                  WHERE id='$rental_id'");
+
+        header("location:bayar.php?id=" . $rental_id . "&sukses=" . urlencode("Lampiran bukti transfer berhasil dibatalkan. Metode aktif: Bayar di Kasir Basecamp."));
+        exit;
+    } else {
+        header("location:riwayat.php?pesan=" . urlencode("Data pesanan tidak ditemukan atau akses ditolak!"));
+        exit;
+    }
+}
+
 // 3. PROSES BATALKAN SEWA OLEH USER
 if (isset($_GET['batal']) || isset($_POST['batal_sewa'])) {
     $rental_id = (int)($_POST['rental_id'] ?? $_GET['batal'] ?? 0);

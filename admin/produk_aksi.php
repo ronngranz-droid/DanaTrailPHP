@@ -234,28 +234,36 @@ if (isset($_GET['hapus'])) {
 
 // 4. RESTOCK BARANG / TAMBAH STOK CEPAT DENGAN POTONG KAS TOKO
 if (isset($_POST['restock_produk'])) {
-    $redirect_base = get_safe_redirect('perlengkapan.php');
+    $redirect_base = get_safe_redirect('stok.php');
     $glue          = (strpos($redirect_base, '?') !== false) ? '&' : '?';
 
-    $product_id    = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
-    $restock_target= isset($_POST['restock_target']) ? trim($_POST['restock_target']) : 'rental';
-    $qty_rental    = isset($_POST['qty_rental']) ? max(0, (int)$_POST['qty_rental']) : 0;
-    $qty_sale      = isset($_POST['qty_sale']) ? max(0, (int)$_POST['qty_sale']) : 0;
-    $cost_per_unit = isset($_POST['cost_per_unit']) ? max(0, (float)$_POST['cost_per_unit']) : 0;
-    $notes         = isset($_POST['notes']) ? trim($_POST['notes']) : '';
+    $product_id         = isset($_POST['product_id']) ? (int)$_POST['product_id'] : 0;
+    $restock_target     = 'sale'; // Restock dikhususkan untuk barang toko / dagangan yang dijual
+    $qty_rental         = 0;
+    $qty_sale           = isset($_POST['qty_sale']) ? max(1, (int)$_POST['qty_sale']) : 10;
+    $cost_per_unit      = isset($_POST['cost_per_unit']) ? max(0, (float)$_POST['cost_per_unit']) : 0;
+    $selling_price      = isset($_POST['selling_price']) ? max(0, (float)$_POST['selling_price']) : 0;
+    $update_price_sale  = !empty($_POST['update_price_sale']);
+    $notes              = isset($_POST['notes']) ? trim($_POST['notes']) : '';
 
-    if ($restock_target === 'rental') {
-        $qty_sale = 0;
-    } elseif ($restock_target === 'sale') {
-        $qty_rental = 0;
+    // Jika admin memilih untuk memperbarui harga jual produk di katalog toko
+    if ($update_price_sale && $selling_price > 0 && $product_id > 0) {
+        mysqli_query($conn, "UPDATE products SET price_sale = '$selling_price' WHERE id = '$product_id'");
     }
 
     $res = process_stock_addition_and_deduct_cash($conn, $product_id, $restock_target, $qty_rental, $qty_sale, $cost_per_unit, 'restock', $notes);
 
     if ($res['success']) {
-        $msg = "Stok '" . $res['product_name'] . "' berhasil ditambah +" . $res['qty_added'] . " unit!";
+        $profit_per_unit = max(0, $selling_price - $cost_per_unit);
+        $total_est_profit = $profit_per_unit * $qty_sale;
+        $margin_pct = ($selling_price > 0) ? round(($profit_per_unit / $selling_price) * 100) : 0;
+
+        $msg = "Restock " . $res['qty_added'] . " unit '" . $res['product_name'] . "' berhasil disimpan! ";
+        $msg .= "Modal: Rp " . number_format($cost_per_unit, 0, ',', '.') . "/unit, ";
+        $msg .= "Harga Jual: Rp " . number_format($selling_price, 0, ',', '.') . "/unit ";
+        $msg .= "(Estimasi Untung: +Rp " . number_format($total_est_profit, 0, ',', '.') . " / Margin {$margin_pct}%). ";
         if ($res['total_cost'] > 0) {
-            $msg .= " Uang kas toko berkurang Rp " . number_format($res['total_cost'], 0, ',', '.') . " (Sisa Kas: Rp " . number_format($res['cash_after'], 0, ',', '.') . "). Total nilai aset produk kini Rp " . number_format($res['new_total_value'], 0, ',', '.') . ".";
+            $msg .= "Uang kas toko terpotong Rp " . number_format($res['total_cost'], 0, ',', '.') . " (Sisa Kas: Rp " . number_format($res['cash_after'], 0, ',', '.') . ").";
         }
         header("location:" . $redirect_base . $glue . "sukses=" . urlencode($msg));
     } else {

@@ -61,6 +61,12 @@ if ($filter_status === 'kritis') {
 } elseif ($filter_status === 'habis') {
     $query_inventory .= " AND ((product_type IN ('rental', 'both') AND stock = 0) OR (product_type IN ('sale', 'both') AND stock_sale = 0))";
 }
+$filter_tipe = isset($_GET['tipe']) ? trim($_GET['tipe']) : '';
+if ($filter_tipe === 'jual') {
+    $query_inventory .= " AND product_type IN ('sale', 'both')";
+} elseif ($filter_tipe === 'sewa') {
+    $query_inventory .= " AND product_type = 'rental'";
+}
 $query_inventory .= " ORDER BY (stock + stock_sale) ASC, id DESC";
 $data_inventory = mysqli_query($conn, $query_inventory);
 
@@ -427,6 +433,43 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
             transform: scale(1.02);
         }
 
+        .badge-asset-rent {
+            display: inline-flex;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        .btn-margin-chip {
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-margin-chip:hover {
+            border-color: #059669;
+            color: #059669;
+            background: #ecfdf5;
+        }
+
+        .btn-margin-chip.active {
+            background: #059669;
+            color: #ffffff;
+            border-color: #059669;
+        }
+
         /* TOAST NOTIF */
         .toast-notification {
             display: flex;
@@ -786,8 +829,10 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
             </div>
 
             <?php if ($active_tab === 'inventaris'): ?>
-                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                    <a href="stok.php?tab=inventaris" style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-decoration: none; padding: 4px 10px; border-radius: var(--radius-sm); background: <?php echo empty($filter_status) ? '#e2e8f0' : 'transparent'; ?>;">Semua</a>
+                <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                    <a href="stok.php?tab=inventaris" style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-decoration: none; padding: 4px 10px; border-radius: var(--radius-sm); background: <?php echo (empty($filter_status) && empty($filter_tipe)) ? '#e2e8f0' : 'transparent'; ?>;">Semua (<?php echo $total_items; ?>)</a>
+                    <a href="stok.php?tab=inventaris&tipe=jual" style="font-size: 12px; font-weight: 700; color: #1e40af; text-decoration: none; padding: 4px 10px; border-radius: var(--radius-sm); background: <?php echo ($filter_tipe === 'jual') ? '#dbeafe' : 'transparent'; ?>;">Barang Toko / Jual</a>
+                    <a href="stok.php?tab=inventaris&tipe=sewa" style="font-size: 12px; font-weight: 700; color: #065f46; text-decoration: none; padding: 4px 10px; border-radius: var(--radius-sm); background: <?php echo ($filter_tipe === 'sewa') ? '#d1fae5' : 'transparent'; ?>;">Aset Sewa</a>
                     <a href="stok.php?tab=inventaris&status=kritis" style="font-size: 12px; font-weight: 700; color: #b45309; text-decoration: none; padding: 4px 10px; border-radius: var(--radius-sm); background: <?php echo ($filter_status === 'kritis') ? '#fef3c7' : 'transparent'; ?>;">Stok Menipis (<=2)</a>
                     <a href="stok.php?tab=inventaris&status=habis" style="font-size: 12px; font-weight: 700; color: #b91c1c; text-decoration: none; padding: 4px 10px; border-radius: var(--radius-sm); background: <?php echo ($filter_status === 'habis') ? '#fee2e2' : 'transparent'; ?>;">Stok Habis (0)</a>
                 </div>
@@ -886,12 +931,18 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
                                             <?php endif; ?>
                                         </td>
                                         <td style="text-align: right;">
-                                            <button type="button" class="btn-restock-row" onclick="openModalRestock(<?php echo htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8'); ?>)">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                                                </svg>
-                                                <span>+ Restock</span>
-                                            </button>
+                                            <?php if ($ptype === 'rental'): ?>
+                                                <span class="badge-asset-rent">
+                                                    Aset Sewa Tetap
+                                                </span>
+                                            <?php else: ?>
+                                                <button type="button" class="btn-restock-row" onclick="openModalRestock(<?php echo htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8'); ?>)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                                    </svg>
+                                                    <span>+ Restock Toko</span>
+                                                </button>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endwhile; ?>
@@ -973,14 +1024,14 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
     </main>
 
     <!-- ==========================================================================
-         MODAL: RESTOCK PERLENGKAPAN CEPAT
+         MODAL: RESTOCK BARANG TOKO & KALKULATOR PROFIT OTOMATIS
          ========================================================================== -->
     <div class="modal-overlay" id="modalRestockOverlay" role="dialog" aria-modal="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog" style="max-width: 580px;">
             <div class="modal-header-bar">
                 <div>
-                    <h3>Restock Unit Perlengkapan</h3>
-                    <p style="font-size: 12px; color: #a7f3d0; margin-top: 2px;">Tambah stok barang sewa atau barang toko langsung ke inventaris.</p>
+                    <h3>Restock Barang Dagangan Toko</h3>
+                    <p style="font-size: 12px; color: #a7f3d0; margin-top: 2px;">Otomatisasi kalkulasi harga modal beli, harga jual, dan estimasi keuntungan profit.</p>
                 </div>
                 <button type="button" class="btn-modal-close-icon" onclick="closeModalRestock()" aria-label="Tutup">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -991,84 +1042,98 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
 
             <form action="produk_aksi.php" method="POST" id="formRestock">
                 <input type="hidden" name="product_id" id="restock_product_id" value="">
+                <input type="hidden" name="restock_target" value="sale">
                 <input type="hidden" name="redirect_to" value="<?php echo htmlspecialchars($current_request_uri); ?>">
 
                 <div class="modal-body-scroll">
                     <!-- Info Barang Terpilih -->
                     <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;">
-                        <div id="restock_thumb_box" style="width: 48px; height: 48px; border-radius: var(--radius-sm); overflow: hidden; background: #e2e8f0; flex-shrink: 0;">
+                        <div id="restock_thumb_box" style="width: 50px; height: 50px; border-radius: var(--radius-sm); overflow: hidden; background: #e2e8f0; flex-shrink: 0; border: 1px solid #cbd5e1;">
                             <img id="restock_thumb_img" src="" alt="Foto" style="width: 100%; height: 100%; object-fit: cover;">
                         </div>
                         <div style="min-width: 0; flex: 1;">
                             <h4 id="restock_product_name" style="font-size: 14px; font-weight: 800; color: var(--text-main); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nama Barang</h4>
                             <div style="display: flex; gap: 8px; font-size: 11.5px; color: var(--text-muted); margin-top: 3px;">
-                                <span>Stok Sewa Saat Ini: <strong id="restock_current_rental" style="color: var(--forest-900);">0</strong> unit</span>
-                                <span>•</span>
-                                <span>Stok Toko: <strong id="restock_current_sale" style="color: #1e40af;">0</strong> unit</span>
+                                <span>Kategori: <strong id="restock_product_cat" style="color: var(--forest-900);">-</strong></span>
+                                <span>&bull;</span>
+                                <span>Stok Toko Saat Ini: <strong id="restock_current_sale" style="color: #1e40af;">0</strong> unit</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Pilihan Target Restock -->
+                    <!-- Jumlah Unit Restock -->
                     <div class="form-field-group">
-                        <label>Pilih Target Stok yang Ingin Ditambah *</label>
-                        <div class="type-radio-group">
-                            <label class="type-radio-card selected" id="card_restock_target_rental">
-                                <input type="radio" name="restock_target" id="rt_rental" value="rental" checked onchange="handleRestockTargetChange(this.value)">
-                                <span>Unit Sewa</span>
-                            </label>
-                            <label class="type-radio-card" id="card_restock_target_sale">
-                                <input type="radio" name="restock_target" id="rt_sale" value="sale" onchange="handleRestockTargetChange(this.value)">
-                                <span>Unit Toko</span>
-                            </label>
-                            <label class="type-radio-card" id="card_restock_target_both">
-                                <input type="radio" name="restock_target" id="rt_both" value="both" onchange="handleRestockTargetChange(this.value)">
-                                <span>Keduanya</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Input Jumlah Tambah -->
-                    <div class="form-grid-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
-                        <div class="form-field-group" id="group_qty_rental">
-                            <label for="restock_qty_rental">Tambah Unit Sewa *</label>
-                            <input type="number" name="qty_rental" id="restock_qty_rental" value="5" min="0" oninput="calculateRestockCostSummary()">
-                        </div>
-                        <div class="form-field-group" id="group_qty_sale" style="display: none;">
-                            <label for="restock_qty_sale">Tambah Unit Jual *</label>
-                            <input type="number" name="qty_sale" id="restock_qty_sale" value="0" min="0" oninput="calculateRestockCostSummary()">
-                        </div>
-                    </div>
-
-                    <!-- Biaya Modal Pengadaan Restock -->
-                    <div class="form-field-group" style="margin-top: 10px;">
-                        <label for="restock_cost_per_unit">Harga Modal Beli / Biaya Pengadaan (Rp / unit) *</label>
+                        <label for="restock_qty_sale">Jumlah Unit yang Ingin Direstock *</label>
                         <div style="position: relative;">
-                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b; font-size: 13px;">Rp</span>
-                            <input type="number" name="cost_per_unit" id="restock_cost_per_unit" min="0" placeholder="0" style="padding-left: 38px;" oninput="calculateRestockCostSummary()">
+                            <input type="number" name="qty_sale" id="restock_qty_sale" value="10" min="1" style="font-size: 15px; font-weight: 700; color: var(--forest-950);" oninput="calculateRestockCostSummary()">
+                            <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b; font-size: 12px;">Unit Barang</span>
                         </div>
-                        <small style="color: #64748b; font-size: 11.5px; margin-top: 4px; display: block;">Biaya ini akan langsung memotong uang saldo kas toko dari penjualan.</small>
                     </div>
 
-                    <!-- Panel Kalkulasi Saldo Kas Toko & Nilai Produk -->
-                    <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: var(--radius-md); padding: 12px 14px; margin-top: 12px;">
-                        <div style="font-size: 11.5px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
-                            Ringkasan Dampak Finansial Restock
+                    <!-- Grid 2 Kolom: Harga Modal & Harga Jual -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+                        <div class="form-field-group">
+                            <label for="restock_cost_per_unit">Harga Modal Beli / Kulakan (Rp) *</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #64748b; font-size: 12px;">Rp</span>
+                                <input type="number" name="cost_per_unit" id="restock_cost_per_unit" min="0" placeholder="0" style="padding-left: 36px; font-weight: 700;" oninput="onCostOrPriceChanged('cost')">
+                            </div>
+                            <small style="color: #64748b; font-size: 11px; margin-top: 3px; display: block;">Modal kulakan per unit barang.</small>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #374151; margin-bottom: 4px;">
-                            <span>Saldo Kas Toko Saat Ini:</span>
-                            <strong style="color: #166534;">Rp <?php echo number_format($store_cash, 0, ',', '.'); ?></strong>
+
+                        <div class="form-field-group">
+                            <label for="restock_selling_price">Harga Jual ke Pelanggan (Rp) *</label>
+                            <div style="position: relative;">
+                                <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: #1e40af; font-size: 12px;">Rp</span>
+                                <input type="number" name="selling_price" id="restock_selling_price" min="0" placeholder="0" style="padding-left: 36px; font-weight: 700; color: #1e40af;" oninput="onCostOrPriceChanged('sell')">
+                            </div>
+                            <small style="color: #64748b; font-size: 11px; margin-top: 3px; display: block;">Harga tayang di katalog toko.</small>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #b91c1c; margin-bottom: 4px;">
-                            <span>Total Biaya Restock (Potong Kas):</span>
+                    </div>
+
+                    <!-- Rekomendasi Margin 1-Click Preset -->
+                    <div style="margin-top: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 10px 12px;">
+                        <span style="font-size: 11.5px; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">
+                            Pilih Rekomendasi Margin Keuntungan Otomatis:
+                        </span>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button type="button" class="btn-margin-chip" data-margin="0.20" onclick="applyMarginPreset(0.20, this)">+20% Hemat</button>
+                            <button type="button" class="btn-margin-chip" data-margin="0.25" onclick="applyMarginPreset(0.25, this)">+25% Standar</button>
+                            <button type="button" class="btn-margin-chip active" data-margin="0.30" onclick="applyMarginPreset(0.30, this)">+30% Rekomendasi</button>
+                            <button type="button" class="btn-margin-chip" data-margin="0.40" onclick="applyMarginPreset(0.40, this)">+40% Untung Tinggi</button>
+                            <button type="button" class="btn-margin-chip" data-margin="0.50" onclick="applyMarginPreset(0.50, this)">+50% Maksimal</button>
+                        </div>
+                    </div>
+
+                    <!-- Panel Analisis Finansial & Profit Otomatis -->
+                    <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px solid #86efac; border-radius: var(--radius-md); padding: 14px; margin-top: 12px;">
+                        <div style="font-size: 11.5px; font-weight: 800; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                            <span>Analisis Profit & Dampak Kas Toko</span>
+                            <span id="badge_profit_margin" style="background: #16a34a; color: #ffffff; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 700;">Margin 30%</span>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #374151; margin-bottom: 5px;">
+                            <span>Keuntungan (Profit) per Unit:</span>
+                            <strong id="lbl_profit_per_unit" style="color: #15803d; font-size: 13.5px;">+ Rp 0</strong>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #b91c1c; margin-bottom: 5px;">
+                            <span>Total Modal Restock (Potong Kas):</span>
                             <strong id="restock_summary_total_cost">- Rp 0</strong>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #1e40af; margin-bottom: 4px;">
-                            <span>Pertambahan Nilai Seluruh Produk:</span>
-                            <strong id="restock_summary_asset_increase">+ Rp 0</strong>
+
+                        <div style="display: flex; justify-content: space-between; font-size: 12.5px; color: #1e40af; margin-bottom: 5px;">
+                            <span>Proyeksi Total Omset Penjualan:</span>
+                            <strong id="restock_summary_total_revenue">Rp 0</strong>
                         </div>
-                        <div style="border-top: 1px dashed #86efac; margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 13.5px;">
-                            <span style="font-weight: 700; color: #14532d;">Sisa Saldo Kas Toko:</span>
+
+                        <div style="background: #ffffff; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 12px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: #14532d; font-size: 12.5px;">Estimasi Total Laba Bersih:</span>
+                            <strong id="lbl_total_estimated_profit" style="color: #15803d; font-size: 15px; font-family: 'Outfit', sans-serif;">+ Rp 0</strong>
+                        </div>
+
+                        <div style="border-top: 1px dashed #86efac; margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-size: 12.5px;">
+                            <span style="color: #4b5563;">Sisa Saldo Kas Toko:</span>
                             <strong id="restock_summary_remaining_balance" style="color: #15803d; font-family: 'Outfit', sans-serif;">Rp <?php echo number_format($store_cash, 0, ',', '.'); ?></strong>
                         </div>
                         <div id="restock_warning_insufficient" style="display: none; margin-top: 8px; background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; padding: 7px 10px; border-radius: var(--radius-sm); font-size: 11.5px; font-weight: 700;">
@@ -1076,17 +1141,25 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
                         </div>
                     </div>
 
+                    <!-- Opsi Perbarui Harga Jual di Katalog -->
+                    <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-sm);">
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text-main); cursor: pointer; margin: 0;">
+                            <input type="checkbox" name="update_price_sale" id="update_price_sale" value="1" checked style="width: 15px; height: 15px;">
+                            <span>Perbarui harga jual di katalog toko dengan harga ini</span>
+                        </label>
+                    </div>
+
                     <!-- Catatan Restock -->
-                    <div class="form-field-group" style="margin-top: 12px;">
+                    <div class="form-field-group" style="margin-top: 10px;">
                         <label for="restock_notes">Catatan Restock / Keterangan (Opsional)</label>
-                        <input type="text" name="notes" id="restock_notes" placeholder="Contoh: Tambah stok untuk musim pendakian liburan">
+                        <input type="text" name="notes" id="restock_notes" placeholder="Contoh: Kulakan stok baru untuk liburan akhir tahun">
                     </div>
                 </div>
 
                 <div class="modal-footer-bar">
                     <button type="button" class="btn-modal-cancel-btn" onclick="closeModalRestock()">Batal</button>
-                    <button type="submit" name="restock_produk" class="btn-modal-confirm-btn">
-                        Simpan Tambah Stok
+                    <button type="submit" name="restock_produk" id="btn_submit_restock" class="btn-modal-confirm-btn">
+                        Simpan Restock Unit Toko
                     </button>
                 </div>
             </form>
@@ -1096,44 +1169,68 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
     <script>
         const CURRENT_STORE_CASH = <?php echo json_encode((float)$store_cash); ?>;
         let activeRestockProduct = null;
+        let selectedMarginPreset = 0.30;
+
+        function applyMarginPreset(marginPct, btn) {
+            selectedMarginPreset = marginPct;
+            document.querySelectorAll('.btn-margin-chip').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+
+            let sellPrice = parseFloat(document.getElementById('restock_selling_price').value) || 0;
+            if (sellPrice <= 0 && activeRestockProduct) {
+                sellPrice = parseFloat(activeRestockProduct.price_sale) || (parseFloat(activeRestockProduct.price) * 10) || 100000;
+                document.getElementById('restock_selling_price').value = Math.round(sellPrice);
+            }
+
+            // Hitung harga modal: cost = sell * (1 - margin)
+            let costPrice = Math.round(sellPrice * (1 - marginPct));
+            costPrice = Math.round(costPrice / 1000) * 1000;
+            if (costPrice <= 0) costPrice = Math.round(sellPrice * 0.7);
+
+            document.getElementById('restock_cost_per_unit').value = costPrice;
+            calculateRestockCostSummary();
+        }
+
+        function onCostOrPriceChanged(source) {
+            calculateRestockCostSummary();
+        }
 
         function calculateRestockCostSummary() {
             if (!activeRestockProduct) return;
 
-            const target = document.querySelector('input[name="restock_target"]:checked')?.value || 'rental';
-            const rentQty = parseInt(document.getElementById('restock_qty_rental')?.value) || 0;
-            const saleQty = parseInt(document.getElementById('restock_qty_sale')?.value) || 0;
-
-            let totalQty = 0;
-            if (target === 'rental') totalQty = rentQty;
-            else if (target === 'sale') totalQty = saleQty;
-            else if (target === 'both') totalQty = rentQty + saleQty;
-
+            const qty = parseInt(document.getElementById('restock_qty_sale')?.value) || 0;
             const costPerUnit = parseFloat(document.getElementById('restock_cost_per_unit')?.value) || 0;
-            const totalDeduction = totalQty * costPerUnit;
-            const remaining = CURRENT_STORE_CASH - totalDeduction;
+            const sellPrice = parseFloat(document.getElementById('restock_selling_price')?.value) || 0;
 
-            const rentTariff = parseFloat(activeRestockProduct.price) || 0;
-            const saleTariff = parseFloat(activeRestockProduct.price_sale) || 0;
-            let assetIncrease = 0;
-            if (target === 'rental') assetIncrease = rentQty * rentTariff;
-            else if (target === 'sale') assetIncrease = saleQty * saleTariff;
-            else if (target === 'both') assetIncrease = (rentQty * rentTariff) + (saleQty * saleTariff);
+            const totalCost = qty * costPerUnit;
+            const totalRevenue = qty * sellPrice;
+            const profitPerUnit = Math.max(0, sellPrice - costPerUnit);
+            const totalProfit = qty * profitPerUnit;
 
+            const marginPct = (sellPrice > 0) ? Math.round((profitPerUnit / sellPrice) * 100) : 0;
+            const remainingCash = CURRENT_STORE_CASH - totalCost;
+
+            const badgeMargin = document.getElementById('badge_profit_margin');
+            const lblProfitUnit = document.getElementById('lbl_profit_per_unit');
             const costEl = document.getElementById('restock_summary_total_cost');
-            const assetEl = document.getElementById('restock_summary_asset_increase');
+            const revEl = document.getElementById('restock_summary_total_revenue');
+            const profitEl = document.getElementById('lbl_total_estimated_profit');
             const remEl = document.getElementById('restock_summary_remaining_balance');
             const warnEl = document.getElementById('restock_warning_insufficient');
             const btnSubmit = document.getElementById('btn_submit_restock');
 
-            if (costEl) costEl.textContent = '- Rp ' + totalDeduction.toLocaleString('id-ID');
-            if (assetEl) assetEl.textContent = '+ Rp ' + assetIncrease.toLocaleString('id-ID');
+            if (badgeMargin) badgeMargin.textContent = 'Margin ' + marginPct + '%';
+            if (lblProfitUnit) lblProfitUnit.textContent = '+ Rp ' + profitPerUnit.toLocaleString('id-ID') + ' (' + marginPct + '%)';
+            if (costEl) costEl.textContent = '- Rp ' + totalCost.toLocaleString('id-ID');
+            if (revEl) revEl.textContent = 'Rp ' + totalRevenue.toLocaleString('id-ID');
+            if (profitEl) profitEl.textContent = '+ Rp ' + totalProfit.toLocaleString('id-ID');
+
             if (remEl) {
-                remEl.textContent = 'Rp ' + remaining.toLocaleString('id-ID');
-                remEl.style.color = (remaining < 0) ? '#dc2626' : '#15803d';
+                remEl.textContent = 'Rp ' + remainingCash.toLocaleString('id-ID');
+                remEl.style.color = (remainingCash < 0) ? '#dc2626' : '#15803d';
             }
 
-            if (totalDeduction > CURRENT_STORE_CASH) {
+            if (totalCost > CURRENT_STORE_CASH) {
                 if (warnEl) warnEl.style.display = 'block';
                 if (btnSubmit) {
                     btnSubmit.disabled = true;
@@ -1155,25 +1252,27 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
             activeRestockProduct = product;
             document.getElementById('restock_product_id').value = product.id;
             document.getElementById('restock_product_name').textContent = product.name;
-            document.getElementById('restock_current_rental').textContent = product.stock || 0;
+            document.getElementById('restock_product_cat').textContent = product.category || 'Outdoor Gear';
             document.getElementById('restock_current_sale').textContent = product.stock_sale || 0;
+            document.getElementById('restock_qty_sale').value = 10;
 
-            const defaultCost = parseFloat(product.cost_price) || (parseFloat(product.price_sale) ? Math.round(parseFloat(product.price_sale) * 0.6) : (parseFloat(product.price) ? Math.round(parseFloat(product.price) * 3) : 50000));
-            const costInput = document.getElementById('restock_cost_per_unit');
-            if (costInput) costInput.value = defaultCost;
-
-            const ptype = product.product_type || 'rental';
-
-            if (ptype === 'rental') {
-                document.getElementById('rt_rental').checked = true;
-                handleRestockTargetChange('rental');
-            } else if (ptype === 'sale') {
-                document.getElementById('rt_sale').checked = true;
-                handleRestockTargetChange('sale');
-            } else {
-                document.getElementById('rt_rental').checked = true;
-                handleRestockTargetChange('rental');
+            let sellPrice = parseFloat(product.price_sale) || 0;
+            if (sellPrice <= 0) {
+                sellPrice = (parseFloat(product.price) * 10) || 100000;
             }
+
+            let costPrice = parseFloat(product.cost_price) || 0;
+            if (costPrice <= 0) {
+                costPrice = Math.round((sellPrice * 0.70) / 1000) * 1000;
+            }
+
+            document.getElementById('restock_selling_price').value = Math.round(sellPrice);
+            document.getElementById('restock_cost_per_unit').value = Math.round(costPrice);
+
+            document.querySelectorAll('.btn-margin-chip').forEach(b => {
+                if (b.getAttribute('data-margin') === '0.30') b.classList.add('active');
+                else b.classList.remove('active');
+            });
 
             const imgEl = document.getElementById('restock_thumb_img');
             if (product.image && product.image.trim() !== '') {
@@ -1190,42 +1289,6 @@ $current_request_uri = $_SERVER['REQUEST_URI'];
         function closeModalRestock() {
             document.getElementById('modalRestockOverlay').classList.remove('active');
             document.body.style.overflow = 'auto';
-        }
-
-        function handleRestockTargetChange(target) {
-            ['rental', 'sale', 'both'].forEach(t => {
-                const card = document.getElementById('card_restock_target_' + t);
-                if (card) {
-                    if (t === target) card.classList.add('selected');
-                    else card.classList.remove('selected');
-                }
-            });
-
-            const groupRent = document.getElementById('group_qty_rental');
-            const groupSale = document.getElementById('group_qty_sale');
-
-            if (target === 'rental') {
-                groupRent.style.display = 'block';
-                groupSale.style.display = 'none';
-                document.getElementById('restock_qty_sale').value = 0;
-                if (parseInt(document.getElementById('restock_qty_rental').value) <= 0) {
-                    document.getElementById('restock_qty_rental').value = 5;
-                }
-            } else if (target === 'sale') {
-                groupRent.style.display = 'none';
-                groupSale.style.display = 'block';
-                document.getElementById('restock_qty_rental').value = 0;
-                if (parseInt(document.getElementById('restock_qty_sale').value) <= 0) {
-                    document.getElementById('restock_qty_sale').value = 5;
-                }
-            } else if (target === 'both') {
-                groupRent.style.display = 'block';
-                groupSale.style.display = 'block';
-                if (parseInt(document.getElementById('restock_qty_rental').value) <= 0) document.getElementById('restock_qty_rental').value = 3;
-                if (parseInt(document.getElementById('restock_qty_sale').value) <= 0) document.getElementById('restock_qty_sale').value = 3;
-            }
-
-            calculateRestockCostSummary();
         }
 
         window.addEventListener('click', function(e) {

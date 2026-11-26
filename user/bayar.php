@@ -565,21 +565,67 @@ $wa_msg = urlencode("Halo Admin DANATRAIL, saya ingin konfirmasi pembayaran sewa
 
                     <!-- Panel Basecamp -->
                     <div id="panel_basecamp" class="method-panel" style="<?php echo $is_basecamp ? '' : 'display:none;'; ?>">
-                        <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 8px; padding: 14px; margin-bottom: 20px;">
-                            <strong style="color: #1e40af; font-size: 13.5px; display: block;">Bayar Langsung di Basecamp Sidoarjo</strong>
-                            <p style="font-size: 12px; color: #1e3a8a; margin-top: 4px; line-height: 1.45;">
-                                Pilihan sangat santai! Anda tidak perlu transfer atau upload bukti sekarang. Cukup datang pada tanggal sewa ke <strong>Basecamp DANATRAIL Sidoarjo (Jl. Danatrail)</strong> untuk serah terima alat dan pembayaran di kasir.
+                        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1.5px solid #a7f3d0; border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: #059669; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800;">
+                                    ✓
+                                </div>
+                                <div>
+                                    <strong style="color: #064e3b; font-size: 14.5px; display: block;">Bayar Langsung di Kasir Basecamp</strong>
+                                    <span style="font-size: 11.5px; color: #047857;">Tanpa Perlu Transfer Bank & Tanpa Perlu Upload Bukti</span>
+                                </div>
+                            </div>
+
+                            <p style="font-size: 12.5px; color: #065f46; line-height: 1.55; margin-bottom: 14px;">
+                                Pesanan sewa Anda sudah tercatat di sistem. Anda tidak perlu mentransfer dana sekarang. Cukup datang langsung ke kasir Basecamp DANATRAIL saat tanggal sewa tiba.
                             </p>
+
+                            <div style="background: #ffffff; border: 1px solid #d1fae5; border-radius: 8px; padding: 14px; margin-bottom: 16px;">
+                                <div style="font-size: 11.5px; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+                                    Petunjuk Pengambilan & Pembayaran:
+                                </div>
+                                <ol style="margin: 0; padding-left: 18px; font-size: 12px; color: #1e293b; line-height: 1.6;">
+                                    <li>Kunjungi <strong>Basecamp DANATRAIL Sidoarjo</strong> di <strong>Jl. Danatrail</strong> pada tanggal jadwal sewa.</li>
+                                    <li>Tunjukkan <strong>Kode Booking: #<?php echo htmlspecialchars($rental['rental_code']); ?></strong> kepada petugas kasir.</li>
+                                    <li>Serahkan dokumen jaminan fisik: <strong><?php echo htmlspecialchars($rental['guarantee_type'] ?? 'KTP Asli'); ?></strong>.</li>
+                                    <li>Lakukan pembayaran sebesar <strong>Rp <?php echo number_format($total_payable, 0, ',', '.'); ?></strong> secara Tunai (Cash) atau QRIS/Debit di kasir saat serah terima alat.</li>
+                                    <li>Cek kondisi fisik alat bersama petugas dan terima perlengkapan outdoor Anda.</li>
+                                </ol>
+                            </div>
+
+                            <?php if ($has_proof): ?>
+                                <!-- Bantuan Pembatalan Bukti Jika Sebelumnya Pernah Terunggah -->
+                                <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 12px; color: #92400e;">
+                                    <strong>Catatan Lampiran Bukti:</strong>
+                                    <p style="margin: 4px 0 8px 0; font-size: 11.5px;">Pesanan ini memiliki lampiran bukti pembayaran. Jika ingin membatalkan bukti transfer dan tetap membayar penuh di kasir Basecamp, klik tombol di bawah ini:</p>
+                                    <form action="sewa_aksi.php" method="POST" style="margin: 0;">
+                                        <input type="hidden" name="batal_bukti_bayar" value="1">
+                                        <input type="hidden" name="rental_id" value="<?php echo $rental['id']; ?>">
+                                        <button type="submit" onclick="return confirm('Apakah Anda yakin ingin membatalkan bukti transfer dan membayar langsung di kasir Basecamp?');" style="padding: 6px 12px; background: #b45309; color: #ffffff; border: none; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                                            Hapus Bukti Transfer & Tetap Bayar di Kasir
+                                        </button>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
+
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <a href="riwayat.php" style="padding: 10px 18px; background: var(--forest-900); color: #fff; text-decoration: none; border-radius: 6px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                    <span>Lihat di Riwayat Sewa</span>
+                                </a>
+                                <a href="https://wa.me/6288996016686?text=<?php echo $wa_msg; ?>" target="_blank" style="padding: 10px 18px; background: #25D366; color: #fff; text-decoration: none; border-radius: 6px; font-size: 12.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                    <span>Konfirmasi ke Kasir WhatsApp</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Form Upload Bukti Transfer -->
-                    <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px;">
+                    <!-- Form Upload Bukti Transfer (Khusus Transfer Bank / QRIS) -->
+                    <div id="transferUploadSection" style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 8px; <?php echo $is_basecamp ? 'display: none;' : ''; ?>">
                         <h4 style="font-size: 13.5px; margin-bottom: 6px; color: var(--text-main);">
                             Unggah Foto / Screenshot Bukti Transfer
                         </h4>
                         <p style="font-size: 11.5px; color: var(--text-muted); margin-bottom: 12px;">
-                            Setelah transfer berhasil, lampirkan screenshot struk pembayaran agar pesananmu segera disiapkan.
+                            Setelah transfer bank / QRIS berhasil, lampirkan struk pembayaran agar pesananmu segera diverifikasi admin.
                         </p>
 
                         <?php if ($has_proof): ?>
@@ -651,6 +697,15 @@ $wa_msg = urlencode("Halo Admin DANATRAIL, saya ingin konfirmasi pembayaran sewa
             document.querySelectorAll('.method-panel').forEach(p => p.style.display = 'none');
             const target = document.getElementById('panel_' + methodKey);
             if (target) target.style.display = 'block';
+
+            const uploadSection = document.getElementById('transferUploadSection');
+            if (uploadSection) {
+                if (methodKey === 'basecamp') {
+                    uploadSection.style.display = 'none';
+                } else {
+                    uploadSection.style.display = 'block';
+                }
+            }
         }
 
         function previewProof(input) {
