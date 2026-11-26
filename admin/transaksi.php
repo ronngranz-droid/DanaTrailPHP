@@ -1700,41 +1700,48 @@ $total_pendapatan = (float)(mysqli_fetch_assoc($q_pendapatan)['total'] ?? 0);
                                             <div class="pay-method-status">
                                                 <?php 
                                                 $is_basecamp = (stripos($payment_method, 'Basecamp') !== false || stripos($payment_method, 'Cash') !== false || stripos($payment_method, 'COD') !== false);
-                                                if ($is_basecamp): 
+                                                $has_proof_file = (!empty($pay_proof) && file_exists('../uploads/payments/' . $pay_proof));
                                                 ?>
-                                                    <?php if ($pay_status === 'Lunas'): ?>
-                                                        <span class="pay-pill-lunas">✓ Lunas (Basecamp)</span>
-                                                    <?php else: ?>
-                                                        <span class="pay-pill-cod">Bayar di Basecamp</span>
-                                                        <a href="transaksi_aksi.php?verifikasi_bayar=1&id=<?php echo $row['id']; ?>&status_bayar=Lunas" onclick="return confirm('Tandai pembayaran tunai di kasir basecamp sebagai Lunas?');" class="btn-kasir-pay">
-                                                            ✓ Terima Bayar
-                                                        </a>
-                                                    <?php endif; ?>
+                                                
+                                                <!-- Status Badge Utama -->
+                                                <?php if ($pay_status === 'Lunas'): ?>
+                                                    <span class="pay-pill-lunas">✓ Lunas (<?php echo $is_basecamp ? 'Basecamp' : 'Online'; ?>)</span>
+                                                <?php elseif ($pay_status === 'Menunggu Verifikasi Admin'): ?>
+                                                    <span class="pay-pill-verify" style="background: #fef3c7; color: #92400e; border: 1.5px solid #f59e0b; font-weight: 800; padding: 2px 7px; border-radius: 9999px;">
+                                                        Perlu Verifikasi Admin
+                                                    </span>
+                                                <?php elseif ($is_basecamp): ?>
+                                                    <span class="pay-pill-cod">Bayar di Basecamp</span>
                                                 <?php else: ?>
-                                                    <?php if ($pay_status === 'Lunas'): ?>
-                                                        <span class="pay-pill-lunas">✓ Lunas Online</span>
-                                                    <?php elseif ($pay_status === 'Menunggu Verifikasi Admin'): ?>
-                                                        <span class="pay-pill-verify">Menunggu Verifikasi</span>
-                                                    <?php else: ?>
-                                                        <span class="pay-pill-pending">Belum Bayar Online</span>
-                                                    <?php endif; ?>
+                                                    <span class="pay-pill-pending">Belum Bayar Online</span>
+                                                <?php endif; ?>
 
-                                                    <?php if (!empty($pay_proof) && file_exists('../uploads/payments/' . $pay_proof)): ?>
-                                                        <button type="button" onclick="openAdminPhotoModal('../uploads/payments/<?php echo htmlspecialchars($pay_proof); ?>', 'Bukti Bayar <?php echo htmlspecialchars(addslashes($row['user_name'] ?? 'User')); ?> (<?php echo htmlspecialchars(addslashes($row['rental_code'])); ?>)')" class="btn-proof-link">
-                                                            Lihat Bukti Transfer
+                                                <!-- BUKTI TRANSFER PEMBAYARAN: Selalu tampil jika ada bukti transfer yang diunggah pelanggan! -->
+                                                <?php if ($has_proof_file): ?>
+                                                    <div style="margin-top: 4px;">
+                                                        <button type="button" onclick="openAdminPhotoModal('../uploads/payments/<?php echo htmlspecialchars($pay_proof); ?>', 'Bukti Transfer: <?php echo htmlspecialchars(addslashes($row['user_name'] ?? 'User')); ?> (<?php echo htmlspecialchars(addslashes($row['rental_code'])); ?>)')" class="btn-proof-link" style="background: #ecfdf5; border: 1.5px solid #10b981; color: #047857; font-weight: 800; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 3px rgba(16,185,129,0.2);">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                            <span>Lihat Bukti Transfer</span>
                                                         </button>
-                                                    <?php endif; ?>
+                                                    </div>
+                                                <?php elseif (!empty($pay_proof)): ?>
+                                                    <div style="font-size: 10.5px; color: #dc2626; margin-top: 3px;">
+                                                        Bukti: <?php echo htmlspecialchars($pay_proof); ?> (File tidak ditemukan)
+                                                    </div>
+                                                <?php endif; ?>
 
-                                                    <?php if ($pay_status !== 'Lunas'): ?>
-                                                        <div style="display: flex; gap: 4px; margin-top: 2px;">
-                                                            <a href="transaksi_aksi.php?verifikasi_bayar=1&id=<?php echo $row['id']; ?>&status_bayar=Lunas" onclick="return confirm('Konfirmasi pembayaran pesanan ini sebagai Lunas?');" class="btn-mini-confirm">
-                                                                Set Lunas
+                                                <!-- Tombol Aksi Verifikasi Pembayaran -->
+                                                <?php if ($pay_status !== 'Lunas'): ?>
+                                                    <div style="display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap;">
+                                                        <a href="transaksi_aksi.php?verifikasi_bayar=1&id=<?php echo $row['id']; ?>&status_bayar=Lunas" onclick="return confirm('Konfirmasi pembayaran pesanan ini sebagai Lunas?');" class="btn-mini-confirm" style="padding: 3px 8px; font-size: 11px; font-weight: 800; background: #059669; color: #ffffff; border-radius: 5px; text-decoration: none;">
+                                                            ✓ Set Lunas
+                                                        </a>
+                                                        <?php if ($has_proof_file || $pay_status === 'Menunggu Verifikasi Admin'): ?>
+                                                            <a href="transaksi_aksi.php?verifikasi_bayar=1&id=<?php echo $row['id']; ?>&status_bayar=Pembayaran Ditolak" onclick="return confirm('Tolak bukti pembayaran ini?');" class="btn-mini-reject" style="padding: 3px 8px; font-size: 11px; font-weight: 700; background: #dc2626; color: #ffffff; border-radius: 5px; text-decoration: none;">
+                                                                ✕ Tolak Bukti
                                                             </a>
-                                                            <a href="transaksi_aksi.php?verifikasi_bayar=1&id=<?php echo $row['id']; ?>&status_bayar=Pembayaran Ditolak" onclick="return confirm('Tolak bukti pembayaran ini?');" class="btn-mini-reject">
-                                                                Tolak
-                                                            </a>
-                                                        </div>
-                                                    <?php endif; ?>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 <?php endif; ?>
                                             </div>
                                         </div>

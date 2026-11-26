@@ -422,7 +422,7 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 24px 32px 120px 32px;
+            padding: 20px 24px 100px 24px;
             max-width: 1440px;
             margin: 0 auto;
             width: 100%;
@@ -718,29 +718,48 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
         .table-responsive-wrapper {
             width: 100%;
             overflow-x: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--forest-800) #f1f5f9;
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--forest-800);
         }
 
         .rentals-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13px;
+            font-size: 12px;
             text-align: left;
         }
 
         .rentals-table th {
             background: #f1f4f0;
             color: var(--forest-950);
-            font-size: 11px;
+            font-size: 10.5px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 800;
-            padding: 12px 16px;
+            padding: 10px 10px;
             border-bottom: 1px solid var(--border-color);
             white-space: nowrap;
         }
 
         .rentals-table td {
-            padding: 14px 16px;
+            padding: 11px 10px;
             border-bottom: 1px solid var(--border-light);
             vertical-align: middle;
             color: var(--text-body);
@@ -756,11 +775,11 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
 
         .rental-code-tag {
             font-family: monospace;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
             background: var(--bg-canvas);
             border: 1px solid var(--border-color);
-            padding: 3px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
             color: var(--forest-900);
             white-space: nowrap;
@@ -769,13 +788,13 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
         .gear-identity-box {
             display: flex;
             align-items: center;
-            gap: 12px;
-            min-width: 200px;
+            gap: 10px;
+            min-width: 140px;
         }
 
         .gear-thumb-img {
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             border-radius: var(--radius-sm);
             object-fit: cover;
             background: var(--bg-canvas);
@@ -784,14 +803,14 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
         }
 
         .gear-title-text {
-            font-size: 13.5px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--text-main);
             line-height: 1.3;
         }
 
         .gear-category-text {
-            font-size: 11px;
+            font-size: 10.5px;
             color: var(--text-muted);
             margin-top: 2px;
         }
@@ -802,19 +821,19 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
 
         .schedule-date-box b {
             color: var(--text-main);
-            font-size: 12.5px;
+            font-size: 11.5px;
         }
 
         .schedule-date-box small {
             display: block;
             color: var(--text-muted);
-            font-size: 11px;
+            font-size: 10.5px;
             margin-top: 1px;
         }
 
         .price-tag-value {
             font-family: 'Outfit', sans-serif;
-            font-size: 15px;
+            font-size: 13.5px;
             font-weight: 800;
             color: var(--forest-900);
             white-space: nowrap;
@@ -824,10 +843,10 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
         .status-pill-badge {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
-            padding: 4px 10px;
+            gap: 4px;
+            padding: 3px 8px;
             border-radius: var(--radius-pill);
-            font-size: 11.5px;
+            font-size: 10.5px;
             font-weight: 700;
             white-space: nowrap;
         }
@@ -860,10 +879,10 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
             color: #dc2626;
             background: #fff;
             border: 1px solid #fca5a5;
-            padding: 5px 12px;
+            padding: 3px 8px;
             border-radius: var(--radius-sm);
             text-decoration: none;
-            font-size: 12px;
+            font-size: 10.5px;
             font-weight: 700;
             display: inline-block;
             transition: var(--transition-fast);
@@ -873,6 +892,83 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
         .btn-cancel-rental:hover {
             background: #dc2626;
             color: #ffffff;
+        }
+
+        .btn-act-pay {
+            padding: 5px 10px;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 4px rgba(5,150,105,0.25);
+            white-space: nowrap;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+
+        .btn-act-pay:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+
+        .btn-act-sublink {
+            background: none;
+            border: none;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            white-space: nowrap;
+        }
+
+        .btn-act-sublink:hover {
+            color: var(--forest-800);
+        }
+
+        .btn-act-invoice {
+            padding: 3px 8px;
+            background: #ffffff;
+            color: var(--forest-900);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            transition: var(--transition-fast);
+        }
+
+        .btn-act-invoice:hover {
+            background: #f1f5f2;
+            border-color: #cbd5e1;
+        }
+
+        .btn-act-wa {
+            padding: 3px 8px;
+            background: #25D366;
+            color: #ffffff;
+            border-radius: 5px;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            transition: var(--transition-fast);
+        }
+
+        .btn-act-wa:hover {
+            background: #1eb956;
         }
 
         .empty-history-cell {
@@ -1104,15 +1200,15 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                 <table class="rentals-table" id="riwayatTable">
                     <thead>
                         <tr>
-                            <th>Kode Booking</th>
-                            <th>Perlengkapan Outdoor</th>
-                            <th>Jadwal Sewa</th>
-                            <th>Durasi & Qty</th>
-                            <th>Total Biaya</th>
-                            <th>Status Pembayaran</th>
-                            <th>Jaminan & Foto</th>
-                            <th>Status Sewa</th>
-                            <th style="text-align: right; min-width: 170px;">Aksi & Invoice</th>
+                            <th style="width: 85px;">Kode</th>
+                            <th style="min-width: 140px;">Perlengkapan Outdoor</th>
+                            <th style="width: 115px;">Jadwal Sewa</th>
+                            <th style="width: 65px; text-align: center;">Durasi</th>
+                            <th style="width: 105px;">Total Biaya</th>
+                            <th style="width: 125px;">Status Bayar</th>
+                            <th style="width: 95px;">Jaminan</th>
+                            <th style="width: 95px; text-align: center;">Status Sewa</th>
+                            <th style="text-align: right; width: 105px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1144,11 +1240,11 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                     </td>
                                     <td>
                                         <div class="schedule-date-box">
-                                            <div style="font-size: 11.5px; color: var(--text-muted);">Sewa: <b><?php echo date('d M Y', strtotime($r['rental_date'])); ?></b></div>
-                                            <div style="font-size: 11.5px; color: var(--forest-950);">Batas: <b><?php echo date('d M Y', strtotime($r['return_date'])); ?></b></div>
+                                            <div style="font-size: 11px; color: var(--text-muted);">Sewa: <b style="color: var(--text-main);"><?php echo date('d M Y', strtotime($r['rental_date'])); ?></b></div>
+                                            <div style="font-size: 11px; color: var(--text-muted);">Batas: <b style="color: var(--forest-950);"><?php echo date('d M Y', strtotime($r['return_date'])); ?></b></div>
                                             <?php if (!empty($r['actual_return_date'])): ?>
-                                                <div style="font-size: 11px; color: #166e4a; font-weight: 700; margin-top: 2px;">
-                                                    Dikembalikan: <?php echo date('d M Y', strtotime($r['actual_return_date'])); ?>
+                                                <div style="font-size: 10.5px; color: #166e4a; font-weight: 700; margin-top: 2px;">
+                                                    Kembali: <?php echo date('d M Y', strtotime($r['actual_return_date'])); ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
@@ -1168,50 +1264,47 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                         
                                         if ($late_days > 0 || $fine_amt > 0): 
                                         ?>
-                                            <div style="margin-top: 6px; padding: 6px 8px; border-radius: 6px; background: #fef2f2; border: 1px solid #fecaca; font-size: 11px;">
+                                            <div style="margin-top: 5px; padding: 4px 6px; border-radius: 5px; background: #fef2f2; border: 1px solid #fecaca; font-size: 10.5px;">
                                                 <div style="color: #b91c1c; font-weight: 700;">Terlambat: <?php echo $late_days; ?> Hari</div>
-                                                <div style="color: #7f1d1d;">
+                                                <div style="color: #7f1d1d; font-size: 10px;">
                                                     Denda: <?php echo (($fine_calc['fine_method'] ?? $fine_calc['fine_type'] ?? '') === 'percentage_daily') ? ($fine_calc['fine_rate'] ?? 0) . '%/hari' : format_rupiah($fine_calc['fine_rate'] ?? 20000) . '/hari'; ?>
                                                 </div>
-                                                <div style="color: #991b1b; font-weight: 800; margin-top: 2px;">
-                                                    Total Denda: <?php echo format_rupiah($fine_amt); ?>
+                                                <div style="color: #991b1b; font-weight: 800; margin-top: 1px;">
+                                                    Total: <?php echo format_rupiah($fine_amt); ?>
                                                 </div>
-                                                <div style="margin-top: 3px;">
-                                                    <span style="font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px; background: <?php echo ($fine_stat === 'Sudah Dibayar') ? '#dcfce7; color: #166e4a;' : (($fine_stat === 'Dibebaskan Admin') ? '#f3f4f6; color: #374151;' : '#fee2e2; color: #991b1b;'); ?>">
+                                                <div style="margin-top: 2px;">
+                                                    <span style="font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: 999px; background: <?php echo ($fine_stat === 'Sudah Dibayar') ? '#dcfce7; color: #166e4a;' : (($fine_stat === 'Dibebaskan Admin') ? '#f3f4f6; color: #374151;' : '#fee2e2; color: #991b1b;'); ?>">
                                                         Denda: <?php echo htmlspecialchars($fine_stat); ?>
                                                     </span>
                                                 </div>
                                             </div>
                                         <?php endif; ?>
                                     </td>
-                                    <td>
-                                        <div style="font-weight: 700; color: var(--text-main);"><?php echo $r['duration_days']; ?> Hari</div>
-                                        <div style="font-size: 11.5px; color: var(--text-muted);"><?php echo $r['quantity']; ?> Unit</div>
+                                    <td style="text-align: center;">
+                                        <div style="font-weight: 700; color: var(--text-main); font-size: 12px;"><?php echo $r['duration_days']; ?> Hari</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);"><?php echo $r['quantity']; ?> Unit</div>
                                     </td>
                                     <td>
                                         <?php if ((float)($r['discount_amount'] ?? 0) > 0): ?>
-                                            <div style="font-size: 11.5px; color: var(--text-muted); text-decoration: line-through;">
-                                                Subtotal: <?php echo format_rupiah($r['subtotal_price'] ?? ($r['total_price'] + $r['discount_amount'])); ?>
+                                            <div style="font-size: 10.5px; color: var(--text-muted); text-decoration: line-through;">
+                                                <?php echo format_rupiah($r['subtotal_price'] ?? ($r['total_price'] + $r['discount_amount'])); ?>
                                             </div>
-                                            <div style="font-size: 11px; color: #166e4a; font-weight: 700;">
-                                                Diskon: -<?php echo format_rupiah($r['discount_amount']); ?>
-                                                <?php if (!empty($r['discount_code'])): ?>
-                                                    (<?php echo htmlspecialchars($r['discount_code']); ?>)
-                                                <?php endif; ?>
+                                            <div style="font-size: 10px; color: #166e4a; font-weight: 700;">
+                                                -<?php echo format_rupiah($r['discount_amount']); ?>
                                             </div>
                                         <?php endif; ?>
                                         <div class="price-tag-value">
                                             Rp <?php echo number_format($r['total_price'], 0, ',', '.'); ?>
                                         </div>
                                         <?php if ($fine_amt > 0): ?>
-                                            <div style="font-size: 11px; color: #dc2626; font-weight: 700; margin-top: 2px;">
+                                            <div style="font-size: 10px; color: #dc2626; font-weight: 700; margin-top: 1px;">
                                                 + Denda: <?php echo format_rupiah($fine_amt); ?>
                                             </div>
-                                            <div style="font-size: 11.5px; font-weight: 800; color: var(--forest-950); margin-top: 2px; padding-top: 2px; border-top: 1px dashed var(--border-color);">
-                                                Total Akhir: <?php echo format_rupiah($r['total_price'] + $fine_amt); ?>
+                                            <div style="font-size: 10.5px; font-weight: 800; color: var(--forest-950); margin-top: 1px; padding-top: 1px; border-top: 1px dashed var(--border-color);">
+                                                Akhir: <?php echo format_rupiah($r['total_price'] + $fine_amt); ?>
                                             </div>
                                         <?php endif; ?>
-                                        <div style="font-size: 10.5px; color: var(--text-muted); margin-top: 2px;">
+                                        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">
                                             <?php echo htmlspecialchars($pay_method); ?>
                                         </div>
                                     </td>
@@ -1219,27 +1312,27 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                         <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
                                             <?php if ($is_basecamp): ?>
                                                 <?php if ($pay_status === 'Lunas'): ?>
-                                                    <span class="status-pill-badge status-pill-done" style="font-size: 11px;">✓ Sewa: Lunas (Basecamp)</span>
+                                                    <span class="status-pill-badge status-pill-done">✓ Lunas (Basecamp)</span>
                                                 <?php else: ?>
-                                                    <span class="status-pill-badge" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; font-size: 11px;">Sewa: Bayar di Tempat</span>
+                                                    <span class="status-pill-badge" style="background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4;">Bayar di Basecamp</span>
                                                 <?php endif; ?>
                                             <?php else: ?>
                                                 <?php if ($pay_status === 'Lunas'): ?>
-                                                    <span class="status-pill-badge status-pill-done" style="font-size: 11px;">✓ Sewa: Lunas Online</span>
+                                                    <span class="status-pill-badge status-pill-done">✓ Lunas Online</span>
                                                 <?php elseif ($pay_status === 'Menunggu Verifikasi Admin'): ?>
-                                                    <span class="status-pill-badge status-pill-active" style="font-size: 11px;">Sewa: Menunggu Verifikasi</span>
+                                                    <span class="status-pill-badge status-pill-active">Verifikasi Admin</span>
                                                 <?php else: ?>
-                                                    <span class="status-pill-badge status-pill-pending" style="font-size: 11px;">Sewa: Belum Bayar</span>
+                                                    <span class="status-pill-badge status-pill-pending">Belum Bayar</span>
                                                 <?php endif; ?>
 
                                                 <?php $has_rental_proof = (!empty($pay_proof) && file_exists('../uploads/payments/' . $pay_proof)); ?>
                                                 <?php if ($has_rental_proof): ?>
-                                                    <div style="display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                                        <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 1px 7px; border-radius: 9999px;">
-                                                            ✓ Bukti Terkirim
+                                                    <div style="display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                                                        <span style="font-size: 9.5px; font-weight: 700; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 1px 5px; border-radius: 9999px;">
+                                                            ✓ Bukti Ada
                                                         </span>
-                                                        <button type="button" onclick="openPhotoModal('../uploads/payments/<?php echo htmlspecialchars($pay_proof); ?>', 'Bukti Transfer (<?php echo htmlspecialchars(addslashes($r['rental_code'])); ?>)')" style="background: none; border: none; font-size: 11px; color: var(--forest-700); font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
-                                                            Lihat Bukti
+                                                        <button type="button" onclick="openPhotoModal('../uploads/payments/<?php echo htmlspecialchars($pay_proof); ?>', 'Bukti Transfer (<?php echo htmlspecialchars(addslashes($r['rental_code'])); ?>)')" style="background: none; border: none; font-size: 10px; color: var(--forest-700); font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
+                                                            Lihat
                                                         </button>
                                                     </div>
                                                 <?php endif; ?>
@@ -1248,40 +1341,40 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                             <!-- Status Pembayaran Denda Keterlambatan Terpisah -->
                                             <?php if ($fine_amt > 0): ?>
                                                 <?php if ($fine_stat === 'Sudah Dibayar'): ?>
-                                                    <span class="status-pill-badge status-pill-done" style="font-size: 11px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">✓ Denda: Sudah Lunas</span>
+                                                    <span class="status-pill-badge status-pill-done" style="font-size: 10px; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">✓ Denda Lunas</span>
                                                 <?php elseif ($fine_stat === 'Dibebaskan Admin'): ?>
-                                                    <span class="status-pill-badge" style="font-size: 11px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Denda: Dibebaskan Admin</span>
+                                                    <span class="status-pill-badge" style="font-size: 10px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">Denda Bebas</span>
                                                 <?php else: ?>
-                                                    <span class="status-pill-badge" style="font-size: 11px; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700;">Denda: Belum Dibayar</span>
+                                                    <span class="status-pill-badge" style="font-size: 10px; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 700;">Denda Belum Bayar</span>
                                                 <?php endif; ?>
                                             <?php endif; ?>
                                         </div>
                                     </td>
                                     <td>
-                                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                                            <span style="font-size: 11.5px; font-weight: 600; color: var(--text-body); background: var(--bg-canvas); padding: 2px 7px; border-radius: 4px; border: 1px solid var(--border-color);">
+                                        <div style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start;">
+                                            <span style="font-size: 11px; font-weight: 600; color: var(--text-body); background: var(--bg-canvas); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border-color);">
                                                 <?php echo htmlspecialchars($r['guarantee_type'] ?? 'KTP Asli'); ?>
                                             </span>
-                                            <span style="font-size: 10.5px; color: var(--text-muted); background: #f8fafc; padding: 2px 6px; border-radius: 4px; border: 1px dashed #cbd5e1; display: inline-flex; align-items: center; gap: 3px;">
-                                                <span>Titip Fisik di Basecamp</span>
+                                            <span style="font-size: 10px; color: var(--text-muted); background: #f8fafc; padding: 1px 5px; border-radius: 4px; border: 1px dashed #cbd5e1;">
+                                                Titip Fisik
                                             </span>
                                             <?php if (!empty($guarantee_photo) && file_exists('../uploads/guarantees/' . $guarantee_photo)): ?>
-                                                <button type="button" onclick="openPhotoModal('../uploads/guarantees/<?php echo htmlspecialchars($guarantee_photo); ?>', 'Foto Dokumen Jaminan: <?php echo htmlspecialchars(addslashes($r['guarantee_type'])); ?>')" style="background: none; border: none; font-size: 10.5px; color: var(--forest-700); font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
-                                                    Lihat Foto Arsip
+                                                <button type="button" onclick="openPhotoModal('../uploads/guarantees/<?php echo htmlspecialchars($guarantee_photo); ?>', 'Foto Dokumen Jaminan: <?php echo htmlspecialchars(addslashes($r['guarantee_type'])); ?>')" style="background: none; border: none; font-size: 10px; color: var(--forest-700); font-weight: 700; cursor: pointer; text-decoration: underline; padding: 0;">
+                                                    Lihat Foto
                                                 </button>
                                             <?php endif; ?>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td style="text-align: center;">
                                         <?php 
                                         $st = $r['status'];
                                         $ret_st = $r['return_status'] ?? '';
                                         if ($ret_st === 'Terlambat' || ($st === 'Disewa' && $r['return_date'] < date('Y-m-d'))) {
                                             echo '<span class="status-pill-badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; font-weight: 800;">Terlambat</span>';
                                         } elseif ($st === 'Menunggu Konfirmasi') {
-                                            echo '<span class="status-pill-badge status-pill-pending">Menunggu Konfirmasi</span>';
+                                            echo '<span class="status-pill-badge status-pill-pending">Menunggu</span>';
                                         } elseif ($st === 'Disewa') {
-                                            echo '<span class="status-pill-badge status-pill-active">Sedang Disewa</span>';
+                                            echo '<span class="status-pill-badge status-pill-active">Disewa</span>';
                                         } elseif ($st === 'Selesai') {
                                             echo '<span class="status-pill-badge status-pill-done">Selesai</span>';
                                         } else {
@@ -1290,38 +1383,40 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                         ?>
                                     </td>
                                     <td style="text-align: right;">
-                                        <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
-                                            <!-- Tombol Bayar Online jika pembayaran online & belum lunas -->
-                                            <?php if (!$is_basecamp && $pay_status !== 'Lunas' && $r['status'] !== 'Dibatalkan'): ?>
-                                                <button type="button" onclick="payOnline(<?php echo $r['id']; ?>, <?php echo (int)$r['total_price']; ?>, '<?php echo htmlspecialchars(addslashes($r['rental_code'])); ?>', '<?php echo htmlspecialchars(addslashes($r['product_name'] ?? 'Alat Outdoor')); ?>')" style="padding: 6px 12px; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; border: none; border-radius: 6px; font-size: 11.5px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(5,150,105,0.25); white-space: nowrap;">
-                                                    <span>Bayar Online</span>
-                                                </button>
-
-                                                <button type="button" onclick="openPaymentUploadModal(<?php echo $r['id']; ?>, '<?php echo htmlspecialchars(addslashes($r['rental_code'])); ?>', '<?php echo number_format($r['total_price'], 0, ',', '.'); ?>')" style="background: none; border: none; font-size: 10.5px; color: var(--text-muted); font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
-                                                    <?php echo !empty($has_rental_proof) ? 'Ganti Bukti Manual' : 'Upload Bukti Manual'; ?>
-                                                 </button>
-                                            <?php elseif ($is_basecamp && $pay_status !== 'Lunas' && $r['status'] !== 'Dibatalkan'): ?>
-                                                <span style="font-size: 11px; color: #0f766e; font-weight: 700; text-align: right; display: inline-flex; align-items: center; gap: 4px;">
-                                                    <span>🏠 Bayar di Kasir Basecamp</span>
-                                                </span>
-                                                <button type="button" onclick="openPaymentUploadModal(<?php echo $r['id']; ?>, '<?php echo htmlspecialchars(addslashes($r['rental_code'])); ?>', '<?php echo number_format($r['total_price'], 0, ',', '.'); ?>')" style="background: none; border: none; font-size: 10.5px; color: var(--text-muted); font-weight: 600; cursor: pointer; text-decoration: underline; padding: 0;">
-                                                    Ingin Transfer Sekarang?
-                                                </button>
+                                        <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+                                            <!-- Tombol Bayar / Status Bukti -->
+                                            <?php if ($pay_status !== 'Lunas' && $r['status'] !== 'Dibatalkan'): ?>
+                                                <?php if (!empty($has_rental_proof) || $pay_status === 'Menunggu Verifikasi Admin'): ?>
+                                                    <a href="bayar.php?id=<?php echo $r['id']; ?>" class="btn-act-sublink" style="color: #047857; font-weight: 700;">
+                                                        Lihat Bukti Bayar
+                                                    </a>
+                                                <?php elseif ($is_basecamp): ?>
+                                                    <span style="font-size: 10.5px; color: #0f766e; font-weight: 700; white-space: nowrap;">
+                                                        Bayar di Kasir
+                                                    </span>
+                                                    <a href="bayar.php?id=<?php echo $r['id']; ?>" class="btn-act-sublink">
+                                                        Transfer Online?
+                                                    </a>
+                                                <?php else: ?>
+                                                    <a href="bayar.php?id=<?php echo $r['id']; ?>" class="btn-act-pay">
+                                                        Bayar Sekarang
+                                                    </a>
+                                                <?php endif; ?>
                                             <?php endif; ?>
 
-                                            <!-- Tombol Cetak Invoice -->
-                                            <a href="../invoice.php?id=<?php echo $r['id']; ?>" target="_blank" style="padding: 4px 9px; background: #ffffff; color: var(--forest-800); border: 1.5px solid var(--border-color); border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                                                <span>Cetak Faktur</span>
-                                            </a>
-
-                                            <!-- Tombol WhatsApp CS -->
-                                            <a href="https://wa.me/6288996016686?text=<?php echo $wa_msg; ?>" target="_blank" style="padding: 4px 9px; background: #25D366; color: #ffffff; border-radius: 6px; font-size: 11px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                                                <span>WhatsApp</span>
-                                            </a>
+                                            <!-- Tombol Cetak Faktur & WhatsApp Baris Kompak -->
+                                            <div style="display: flex; gap: 4px; justify-content: flex-end;">
+                                                <a href="../invoice.php?id=<?php echo $r['id']; ?>" target="_blank" class="btn-act-invoice" title="Cetak Faktur">
+                                                    Faktur
+                                                </a>
+                                                <a href="https://wa.me/6288996016686?text=<?php echo $wa_msg; ?>" target="_blank" class="btn-act-wa" title="WhatsApp Admin">
+                                                    WA
+                                                </a>
+                                            </div>
 
                                             <!-- Tombol Batalkan -->
                                             <?php if ($r['status'] === 'Menunggu Konfirmasi'): ?>
-                                                <a href="sewa_aksi.php?batal=<?php echo $r['id']; ?>" class="btn-cancel-rental" style="padding: 3px 8px; font-size: 11px;" onclick="return confirm('Apakah Anda yakin ingin membatalkan pengajuan sewa ini?');">
+                                                <a href="sewa_aksi.php?batal=<?php echo $r['id']; ?>" class="btn-cancel-rental" style="margin-top: 2px;" onclick="return confirm('Apakah Anda yakin ingin membatalkan pengajuan sewa ini?');">
                                                     Batalkan
                                                 </a>
                                             <?php endif; ?>
@@ -1453,7 +1548,7 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                         <div id="uploadModalNominal" style="font-family: 'Outfit', sans-serif; font-size: 20px; font-weight: 800; color: var(--forest-900); margin-top: 2px;">Rp 0</div>
                     </div>
                     <button type="button" onclick="copyRentalUploadNominal()" style="display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: #ffffff; border: 1.5px solid var(--forest-700); color: var(--forest-900); border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;">
-                        <span>📋 Salin Nominal</span>
+                        <span>Salin Nominal</span>
                     </button>
                 </div>
 
@@ -1477,7 +1572,7 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                 <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">a/n PT DANATRAIL INDONESIA</div>
                             </div>
                             <button type="button" onclick="copyTextToClipboard('731009876543', 'No. Rekening BCA')" style="padding: 6px 12px; background: #0284c7; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                                📋 Salin
+                                Salin
                             </button>
                         </div>
                     </div>
@@ -1490,7 +1585,7 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                 <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">a/n PT DANATRAIL INDONESIA</div>
                             </div>
                             <button type="button" onclick="copyTextToClipboard('1370019283741', 'No. Rekening Mandiri')" style="padding: 6px 12px; background: #d97706; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                                📋 Salin
+                                Salin
                             </button>
                         </div>
                     </div>
@@ -1503,7 +1598,7 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                                 <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">a/n PT DANATRAIL INDONESIA</div>
                             </div>
                             <button type="button" onclick="copyTextToClipboard('012301098765508', 'No. Rekening BRI')" style="padding: 6px 12px; background: #0284c7; color: #ffffff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                                📋 Salin
+                                Salin
                             </button>
                         </div>
                     </div>
@@ -1561,7 +1656,7 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; padding: 10px 12px; background: #f8fafc; border-radius: 8px;">
                         <span style="font-size: 12px; color: var(--text-muted);">Ada kendala transfer?</span>
                         <a id="sewaModalWaHelpLink" href="https://wa.me/6288996016686" target="_blank" style="font-size: 12px; font-weight: 700; color: #16a34a; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                            💬 Hubungi Admin via WhatsApp
+                            Hubungi Admin via WhatsApp
                         </a>
                     </div>
 
@@ -1817,6 +1912,35 @@ $count_done    = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS c FR
                 sidebar.classList.toggle('mobile-open');
                 backdrop.classList.toggle('active');
             }
+        }
+
+        // Smooth Drag-to-Scroll for Table on Desktop/Tablet
+        const tableWrapper = document.querySelector('.table-responsive-wrapper');
+        if (tableWrapper) {
+            let isDown = false;
+            let startX, scrollLeft;
+            tableWrapper.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button, a, input, select')) return;
+                isDown = true;
+                tableWrapper.style.cursor = 'grabbing';
+                startX = e.pageX - tableWrapper.offsetLeft;
+                scrollLeft = tableWrapper.scrollLeft;
+            });
+            tableWrapper.addEventListener('mouseleave', () => {
+                isDown = false;
+                tableWrapper.style.cursor = '';
+            });
+            tableWrapper.addEventListener('mouseup', () => {
+                isDown = false;
+                tableWrapper.style.cursor = '';
+            });
+            tableWrapper.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - tableWrapper.offsetLeft;
+                const walk = (x - startX) * 1.5;
+                tableWrapper.scrollLeft = scrollLeft - walk;
+            });
         }
 
         window.addEventListener('keydown', function(e) {

@@ -180,11 +180,18 @@ if (isset($_POST['sewa_produk'])) {
         // Commit transaksi
         mysqli_commit($conn);
 
-        $sukses_msg = "Pemesanan sewa berhasil dikirim! Menunggu konfirmasi admin.";
+        $sukses_msg = "Pemesanan sewa #" . $rental_code . " berhasil dibuat!";
         if ($discount_amount > 0) {
-            $sukses_msg .= " Anda hemat " . format_rupiah($discount_amount) . "!";
+            $sukses_msg .= " Hemat " . format_rupiah($discount_amount) . "!";
         }
-        header("location:riwayat.php?sukses=" . urlencode($sukses_msg));
+
+        $is_basecamp = (stripos($payment_method, 'Basecamp') !== false || stripos($payment_method, 'Cash') !== false || stripos($payment_method, 'COD') !== false);
+        if ($is_basecamp) {
+            header("location:riwayat.php?sukses=" . urlencode($sukses_msg . " Silakan lakukan pembayaran tunai / debit di kasir Basecamp DANATRAIL Sidoarjo saat pengambilan alat."));
+        } else {
+            // Langsung arahkan ke halaman pembayaran yang mudah dan praktis
+            header("location:bayar.php?id=" . $rental_id . "&baru=1&sukses=" . urlencode($sukses_msg . " Silakan selesaikan pembayaran di bawah ini."));
+        }
         exit;
 
     } catch (Exception $e) {
@@ -244,9 +251,12 @@ if (isset($_POST['upload_bukti_bayar'])) {
                       WHERE id='$rental_id'");
 
             if ($update) {
-                header("location:riwayat.php?sukses=Bukti pembayaran berhasil diunggah! Tim DANATRAIL akan segera memverifikasi pesanan Anda.");
+                $redir = (isset($_POST['redirect_to']) && $_POST['redirect_to'] === 'bayar') 
+                    ? "bayar.php?id=" . $rental_id . "&" 
+                    : "riwayat.php?";
+                header("location:" . $redir . "sukses=" . urlencode("Bukti pembayaran berhasil diunggah! Tim Basecamp DANATRAIL akan segera memverifikasi pesanan Anda."));
             } else {
-                header("location:riwayat.php?pesan=Gagal menyimpan data pembayaran: " . mysqli_error($conn));
+                header("location:riwayat.php?pesan=" . urlencode("Gagal menyimpan data pembayaran: " . mysqli_error($conn)));
             }
             exit;
         } else {
